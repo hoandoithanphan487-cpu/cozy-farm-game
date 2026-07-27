@@ -1,0 +1,4 @@
+interface:
+  display_name: "Cozy Farm Game Studio"
+  short_description: "Coordinate an original cozy farm-game production team"
+  default_prompt: "Use $cozy-farm-game-studio to plan and coordinate an original cozy farming game feature from concept through verified implementation."

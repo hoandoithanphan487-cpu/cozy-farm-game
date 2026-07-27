@@ -1,0 +1,12 @@
+.DS_Store
+
+# Godot generated data
+.godot/
+.import/
+
+# Local environment and temporary files
+.env
+.env.*
+!.env.example
+*.tmp
+*.log
