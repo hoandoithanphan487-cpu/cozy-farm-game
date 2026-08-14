@@ -1,0 +1,12 @@
+Captured: 2026-08-05T04:53:36Z
+Command: godot --headless --path /Users/fengyifan/Documents/VibeCoding --editor --quit
+Exit status: 127
+Output:
+zsh:1: command not found: godot
+
+Additional discovery commands:
+command -v godot
+command -v Godot
+find /Applications /usr/local/bin /opt/homebrew/bin -maxdepth 3 -iname '*godot*' -print
+
+Discovery result: no Godot executable or application bundle found.

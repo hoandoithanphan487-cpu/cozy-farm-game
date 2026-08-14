@@ -1,0 +1,13 @@
+Captured: 2026-08-05T05:47:00Z
+Command: networksetup -setairportpower en0 off
+Result: exit status 0
+
+Command: networksetup -getairportpower en0
+Result: Wi-Fi Power (en0): Off
+
+`scutil --nwi` still displayed its earlier `en0` route immediately after the power change; the operating-system Wi-Fi power state above is the recorded disconnect confirmation. The pre-run inventory reported no other active route.
+
+After the offline Godot run completed, the cleanup command restored Wi-Fi:
+
+Command: networksetup -setairportpower en0 on; networksetup -getairportpower en0
+Result: Wi-Fi Power (en0): On

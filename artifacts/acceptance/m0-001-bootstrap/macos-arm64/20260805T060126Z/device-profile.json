@@ -1,0 +1,13 @@
+{
+  "architecture": "arm64",
+  "model_name": "MacBook Air",
+  "model_identifier": "Mac16,12",
+  "chip": "Apple M4",
+  "memory": "16 GB",
+  "operating_system": "macOS 26.5.2 (25F84)",
+  "storage": "Internal 256 GB SSD (approved baseline)",
+  "display_refresh_rate": "60 Hz (approved baseline)",
+  "godot": "4.7.1.stable.official.a13da4feb",
+  "renderer": "gl_compatibility",
+  "redactions": ["hardware address", "IP address", "serial number", "hardware UUID", "local account name"]
+}

@@ -12,6 +12,7 @@ Run a small, role-based studio for an original cozy farm-life game. Preserve the
 - Read [references/roles.md](references/roles.md) before assigning work or adopting a specialist role.
 - Read [references/production-workflow.md](references/production-workflow.md) when starting a feature, milestone, multi-agent task, review, or release.
 - Read [references/genre-blueprint.md](references/genre-blueprint.md) when defining the product, mechanics, MVP, content, art direction, or similarity boundary.
+- For every task development, invoke the `project-ledger` skill. Before work, it must read [docs/game/project-ledger.md](../../docs/game/project-ledger.md) and pass its hard dependency preflight; a task with any unresolved dependency must be marked `BLOCKED` and must not start development unless the Product Owner has recorded an explicit, bounded exception. After the relevant development and quality gates complete, it must update that ledger with the task status, gate result, evidence, and follow-up. Do not mark work accepted before the required explicit `APPROVED` gate.
 
 ## Apply the studio rules
 

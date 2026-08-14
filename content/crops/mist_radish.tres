@@ -1,0 +1,16 @@
+[gd_resource type="Resource" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://src/content/crop_definition.gd" id="1_crop"]
+
+[resource]
+script = ExtResource("1_crop")
+id = &"brookseed.crop.mist_radish"
+seed_item_id = &"brookseed.item.mist_radish_seed"
+harvest_item_id = &"brookseed.item.mist_radish"
+stage_days = PackedInt32Array(1, 1, 1)
+valid_seasons = Array[StringName]([&"spring"])
+yield_min = 1
+yield_max = 1
+regrow_days = 0
+water_need = 1
+mature_stage_index = 2

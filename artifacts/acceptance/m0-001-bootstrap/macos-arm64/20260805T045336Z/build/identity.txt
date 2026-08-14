@@ -1,0 +1,15 @@
+Captured: 2026-08-05T04:53:36Z
+Build ID: m0-001-bootstrap-source-20260805T045336Z
+Build type: source project; no exported application exists because the macOS 4.7.1 export template is absent
+Platform target: macOS arm64
+Godot executable: /Users/fengyifan/Downloads/Godot.app/Contents/MacOS/Godot
+Observed engine: Godot Engine v4.7.1.stable.official.a13da4feb
+Renderer lock: 2D Compatibility (gl_compatibility)
+Export preset: macOS arm64 -> build/macos-arm64/溪谷新芽.app
+
+SHA-256 source inputs:
+1b744b9c046cbc86db3e0543b8750a6e70a810674d1a54c3185298c3f3a6f821  project.godot
+f7460f5a76c95e0a71b81ec6a68db55344a2fb9794ee673f7ab2486a02183037  export_presets.cfg
+1cb3902e8af370fb5a3e436e2548f14ec927234b06d991340fb57b1520a0502c  scenes/bootstrap/bootstrap.tscn
+637d2415ed6124a0c29841fa18ec7a7664ca4e407ec247f9360c15a3448c7a3d  src/core/bootstrap.gd
+912d5f81592fa20c1fe4d69b989c808d88baddf2c49187078ae7f69f1e614e7e  src/core/game_log.gd

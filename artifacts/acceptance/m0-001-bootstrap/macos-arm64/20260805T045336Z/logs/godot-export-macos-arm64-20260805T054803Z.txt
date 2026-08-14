@@ -1,0 +1,11 @@
+Captured: 2026-08-05T05:48:03Z
+Command: /Users/fengyifan/Downloads/Godot.app/Contents/MacOS/Godot --headless --path /Users/fengyifan/Documents/VibeCoding --export-release "macOS arm64" /private/tmp/xiguxinya-m0-export-<temporary>/溪谷新芽.app
+Exit status: 1
+Output (relevant failure):
+ERROR: Cannot export project with preset "macOS arm64" due to configuration errors:
+The export template was not found at the expected path:
+/Users/fengyifan/Library/Application Support/Godot/export_templates/4.7.1.stable/macos.zip
+
+ERROR: Project export for preset "macOS arm64" failed.
+
+Note: the preceding ETC2/ASTC arm64 configuration error was fixed by setting `textures/vram_compression/import_etc2_astc=true` in `project.godot`. This retry reported only the missing export template.

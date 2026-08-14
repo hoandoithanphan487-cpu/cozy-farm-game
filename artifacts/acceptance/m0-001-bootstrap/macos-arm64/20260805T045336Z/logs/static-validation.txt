@@ -1,0 +1,26 @@
+Captured: 2026-08-05T04:53:36Z
+
+Command: rg -n '^([a-z_0-9]+)=\\{' project.godot
+Result: 21 baseline actions found:
+move_up, move_down, move_left, move_right, interact, use_tool, tool_next, tool_previous,
+quick_slot_1..quick_slot_8, inventory, quest_log, pause, ui_accept, ui_cancel.
+
+Command: rg -n 'CATEGORY_NAMES|CONTENT|SAVE|FARM|INVENTORY|ECONOMY|QUEST|WORLD|COMMUNITY|PERF|FUTURE_SERVICE_PORTS|ContentRegistry|SettingsService|SaveService|SceneRouter' src/core
+Result: all nine required logging categories and all four future service-port names are present in the M0-001 source boundary.
+
+Command: rg -n 'platform=|export_path=|architecture' export_presets.cfg
+Result:
+platform="Windows Desktop"
+export_path="build/windows-x86_64/溪谷新芽.exe"
+architecture/x86_64=true
+platform="macOS"
+export_path="build/macos-arm64/溪谷新芽.app"
+binary_format/architecture="arm64"
+
+Command: git diff --check
+Exit status: 0
+Output: (none)
+
+Recheck: `git diff --check` exited 0 after the runtime changes. `project.godot` retains `config/engine_version_lock="4.7.1"`, both `gl_compatibility` renderer values, and now enables `textures/vram_compression/import_etc2_astc=true`, which Godot requires for arm64 export validation.
+
+Limit: static review does not substitute for a release export. Godot parsing and Bootstrap runtime startup are recorded in the dated logs; the actual macOS export remains blocked only by the missing template.

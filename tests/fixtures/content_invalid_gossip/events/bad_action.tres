@@ -1,0 +1,9 @@
+[gd_resource type="Resource" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://src/content/gossip_action_definition.gd" id="1_action"]
+
+[resource]
+script = ExtResource("1_action")
+id = &"brookseed.gossip_action.bad_transition"
+required_event_status = &"offered"
+next_status = &"verified"

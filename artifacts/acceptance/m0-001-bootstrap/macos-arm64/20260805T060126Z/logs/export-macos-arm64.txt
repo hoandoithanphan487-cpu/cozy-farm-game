@@ -1,0 +1,13 @@
+Command: /Users/fengyifan/Downloads/Godot.app/Contents/MacOS/Godot --headless --path /Users/fengyifan/Documents/VibeCoding --export-release "macOS arm64" /private/tmp/xiguxinya-m0-export.2iqPYK/溪谷新芽.app
+Exit status: 0
+
+Relevant output:
+Godot Engine v4.7.1.stable.official.a13da4feb
+[ DONE ] export
+
+Resulting bundle contents include:
+Contents/Info.plist
+Contents/MacOS/溪谷新芽
+Contents/Resources/溪谷新芽.pck
+
+`file Contents/MacOS/溪谷新芽` reported a universal Mach-O with x86_64 and arm64 architectures. The generated Info.plist lists arm64 before x86_64 in `LSArchitecturePriority`.

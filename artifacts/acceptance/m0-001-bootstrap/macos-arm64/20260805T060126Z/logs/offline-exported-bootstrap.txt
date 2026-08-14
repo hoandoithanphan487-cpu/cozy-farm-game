@@ -1,0 +1,11 @@
+Command: /private/tmp/xiguxinya-m0-export.2iqPYK/溪谷新芽.app/Contents/MacOS/溪谷新芽 --headless --quit-after 3
+Offline condition: `networksetup -getairportpower en0` returned `Wi-Fi Power (en0): Off` before launch.
+Exit status: 0
+
+Output:
+Godot Engine v4.7.1.stable.official.a13da4feb
+[2026-08-05 06:01:26][0001][INFO][PERF] Bootstrap startup. engine_lock=4.7.1, scene=res://scenes/bootstrap/bootstrap.tscn
+[2026-08-05 06:01:26][0002][INFO][PERF] Bootstrap ready. input_actions=21, service_ports=4
+[2026-08-05 06:01:26][0003][INFO][PERF] Future service ports intentionally remain unconfigured. ports=ContentRegistry,SettingsService,SaveService,SceneRouter
+
+Post-test network verification: `networksetup -getairportpower en0` returned `Wi-Fi Power (en0): On`.

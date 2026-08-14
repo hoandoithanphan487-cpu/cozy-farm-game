@@ -1,0 +1,4 @@
+interface:
+  display_name: "项目台账"
+  short_description: "Track game phases, task gates, and acceptance evidence"
+  default_prompt: "Use $project-ledger to read and update the current game project ledger."

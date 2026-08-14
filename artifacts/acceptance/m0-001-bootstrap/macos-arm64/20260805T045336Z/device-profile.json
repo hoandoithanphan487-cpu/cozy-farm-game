@@ -1,0 +1,16 @@
+{
+  "captured_at_utc": "2026-08-05T04:53:36Z",
+  "architecture": "arm64",
+  "model_name": "MacBook Air",
+  "model_identifier": "Mac16,12",
+  "model_number": "MW0W3CH/A",
+  "chip": "Apple M4",
+  "cpu_cores": "10 (4 Performance and 6 Efficiency)",
+  "gpu": "Apple M4, 8 cores",
+  "memory": "16 GB",
+  "operating_system": "macOS 26.5.2 (25F84)",
+  "display_refresh_rate": "60 Hz (approved baseline; not re-read by the available command)",
+  "storage": "Internal 256 GB SSD (approved baseline; not re-read by the available command)",
+  "source_command": "uname -m; sw_vers; system_profiler SPHardwareDataType SPSoftwareDataType SPDisplaysDataType",
+  "redactions": ["serial number", "hardware UUID", "provisioning UDID", "local account name"]
+}

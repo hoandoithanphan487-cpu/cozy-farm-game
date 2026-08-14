@@ -1,0 +1,11 @@
+[gd_resource type="Resource" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://src/content/crop_definition.gd" id="1_crop"]
+
+[resource]
+script = ExtResource("1_crop")
+id = &"brookseed.crop.broken"
+seed_item_id = &"brookseed.item.missing_seed"
+harvest_item_id = &"brookseed.item.missing_harvest"
+stage_days = PackedInt32Array(1)
+mature_stage_index = 0

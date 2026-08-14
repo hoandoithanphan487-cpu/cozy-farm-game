@@ -1,0 +1,9 @@
+Command: networksetup -setairportpower en0 off
+Exit status: 0
+
+Command: networksetup -getairportpower en0
+Result: Wi-Fi Power (en0): Off
+
+The exported Bootstrap application then ran successfully in this state; see `../logs/offline-exported-bootstrap.txt`.
+
+Cleanup: the command trap restored `en0`; a follow-up command confirmed `Wi-Fi Power (en0): On`.

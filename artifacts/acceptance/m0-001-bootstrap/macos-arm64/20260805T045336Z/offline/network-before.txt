@@ -1,0 +1,10 @@
+Captured: 2026-08-05T05:39:00Z (before offline run; sensitive identifiers redacted)
+Command: networksetup -listallhardwareports
+Result:
+Active hardware-port inventory included Wi-Fi device `en0`; additional Ethernet and Thunderbolt hardware ports were listed but no alternate reachable interface was reported by `scutil --nwi`.
+
+Command: scutil --nwi
+Result:
+IPv4 reported `en0` as the only network interface, with a reachable route. Its IP address and hardware addresses were redacted.
+
+Interpretation: `en0` was the only active route reported before the offline run.

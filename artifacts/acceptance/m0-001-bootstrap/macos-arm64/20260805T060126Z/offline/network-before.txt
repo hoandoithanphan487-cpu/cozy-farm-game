@@ -1,0 +1,1 @@
+Network condition before test: Wi-Fi `en0` was enabled. The prior network inventory for this candidate reported `en0` as the only active route; hardware and IP identifiers are redacted in the earlier evidence package.

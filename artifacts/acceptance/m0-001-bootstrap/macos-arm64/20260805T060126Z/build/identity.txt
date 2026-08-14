@@ -1,0 +1,16 @@
+Build ID: m0-001-bootstrap-macos-20260805T060126Z
+Build type: Godot 4.7.1 release export
+Export preset: macOS arm64
+Temporary export path: /private/tmp/xiguxinya-m0-export.2iqPYK/溪谷新芽.app
+Engine: Godot Engine v4.7.1.stable.official.a13da4feb
+Renderer: gl_compatibility
+Executable identity: Mach-O universal binary (x86_64 and arm64); arm64 is the preferred Info.plist architecture.
+
+SHA-256:
+233633697eb0f31f0d26344eba344fb53c5700b2c308c7e84d0877ddd82271e2  Contents/MacOS/溪谷新芽
+05bc2819dd25619e3ef368ef548c401ee1e80c3ceb9b7b198d5e4f1248db4946  Contents/Resources/溪谷新芽.pck
+1b744b9c046cbc86db3e0543b8750a6e70a810674d1a54c3185298c3f3a6f821  project.godot
+2c8b448ef4d6b71beb03ed65a121a674e3b1aa475a837a739a41ca7df92c9701  export_presets.cfg
+1cb3902e8af370fb5a3e436e2548f14ec927234b06d991340fb57b1520a0502c  scenes/bootstrap/bootstrap.tscn
+637d2415ed6124a0c29841fa18ec7a7664ca4e407ec247f9360c15a3448c7a3d  src/core/bootstrap.gd
+912d5f81592fa20c1fe4d69b989c808d88baddf2c49187078ae7f69f1e614e7e  src/core/game_log.gd
