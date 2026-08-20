@@ -14,3 +14,7 @@
 # Xcode user state
 xcuserdata/
 *.xcuserstate
+
+# Local evidence archive (large binaries: xcresult, screenshots, saves)
+# Keep evidence local; docs reference these paths.
+artifacts/
