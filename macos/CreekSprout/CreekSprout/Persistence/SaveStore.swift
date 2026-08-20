@@ -19,7 +19,7 @@ struct SaveStore: Sendable {
     init(
         directory: URL,
         slotName: String = "slot_0",
-        catalog: ContentCatalog = .m1Placeholder
+        catalog: ContentCatalog = .vs0
     ) {
         self.directory = directory
         self.slotName = slotName

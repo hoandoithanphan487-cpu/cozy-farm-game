@@ -6,7 +6,11 @@ struct GridPosition: Equatable, Hashable, Codable, Sendable {
     var y: Int
 
     var isInsideFarm: Bool {
-        (0..<Self.columnCount).contains(x) && (0..<Self.rowCount).contains(y)
+        isInside(columns: Self.columnCount, rows: Self.rowCount)
+    }
+
+    func isInside(columns: Int, rows: Int) -> Bool {
+        (0..<columns).contains(x) && (0..<rows).contains(y)
     }
 
     func moved(in direction: Direction) -> GridPosition? {

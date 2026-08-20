@@ -51,6 +51,9 @@ struct FarmActionService: Sendable {
         guard target.isInsideFarm else {
             return Preparation(outcome: .failure("目标格不可达。"), state: nil)
         }
+        if state.currentMapID != ContentID.farmHomestead {
+            return Preparation(outcome: .failure("只能在农场耕作。"), state: nil)
+        }
         if state.stamina < tool.staminaCost {
             return Preparation(outcome: .failure("体力不足，不能继续劳动。"), state: nil)
         }

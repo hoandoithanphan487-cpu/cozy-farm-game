@@ -1,6 +1,20 @@
+struct ClockSnapshot: Equatable, Sendable {
+    var accumulatedMinutes: Double
+    var pauseReasons: Set<PauseReason>
+}
+
 final class ClockSystem {
     private var accumulatedMinutes = 0.0
     private var pauseReasons: Set<PauseReason> = []
+
+    func snapshot() -> ClockSnapshot {
+        ClockSnapshot(accumulatedMinutes: accumulatedMinutes, pauseReasons: pauseReasons)
+    }
+
+    func restore(_ snapshot: ClockSnapshot) {
+        accumulatedMinutes = snapshot.accumulatedMinutes
+        pauseReasons = snapshot.pauseReasons
+    }
 
     var isPaused: Bool {
         !pauseReasons.isEmpty

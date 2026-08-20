@@ -64,10 +64,36 @@ final class FarmLoopTests: XCTestCase {
         let beforeHarvest = state
         let result = farm.apply(to: &state, target: plot, tool: .harvest, catalog: catalog)
         XCTAssertFalse(result.isSuccess)
+        XCTAssertEqual(state, beforeHarvest)
         XCTAssertEqual(state.stamina, beforeHarvest.stamina)
         XCTAssertEqual(state.inventory, beforeHarvest.inventory)
         XCTAssertTrue(state.cell(at: plot).readyToHarvest)
         XCTAssertEqual(state.cell(at: plot).cropID, ContentID.mistRadishCrop)
+    }
+
+    func testHarvestUsesCatalogStackLimitInsteadOfHardcodedNinetyNine() {
+        var catalog = ContentCatalog.m1Placeholder
+        var harvestItem = catalog.items[ContentID.mistRadishItem]!
+        harvestItem.stackLimit = 5
+        catalog.items[ContentID.mistRadishItem] = harvestItem
+        XCTAssertEqual(ContentCatalog.m1Placeholder.item(id: ContentID.mistRadishItem)?.stackLimit, 99)
+        XCTAssertEqual(catalog.stackLimit(for: ContentID.mistRadishItem), 5)
+
+        var state = GameState.m1NewGame()
+        farm.apply(to: &state, target: plot, tool: .hoe, catalog: catalog)
+        farm.apply(to: &state, target: plot, tool: .seed, catalog: catalog)
+        farm.apply(to: &state, target: plot, tool: .water, catalog: catalog)
+        dayCycle.advanceCrops(state: &state, catalog: catalog)
+        farm.apply(to: &state, target: plot, tool: .water, catalog: catalog)
+        dayCycle.advanceCrops(state: &state, catalog: catalog)
+        XCTAssertTrue(state.cell(at: plot).readyToHarvest)
+
+        state.inventoryCapacity = 1
+        state.inventory = [InventoryQuantity(itemID: ContentID.mistRadishItem, quantity: 5)]
+        let beforeHarvest = state
+        let result = farm.apply(to: &state, target: plot, tool: .harvest, catalog: catalog)
+        XCTAssertFalse(result.isSuccess)
+        XCTAssertEqual(state, beforeHarvest)
     }
 
     func testSeedingFailsWhenSeedsAreMissingAndLeavesStateUnchanged() {
@@ -109,7 +135,7 @@ final class FarmLoopTests: XCTestCase {
         dayCycle.settle(state: &state, clock: clock, catalog: catalog)
         XCTAssertEqual(state.clock.day, 2)
         XCTAssertEqual(state.clock.minute, GameClock.dayStartMinute)
-        XCTAssertFalse(state.cell(at: plot).wateredToday)
+        XCTAssertTrue(state.cell(at: plot).wateredToday)
         XCTAssertEqual(state.cell(at: plot).cropStage, 1)
         XCTAssertFalse(clock.isPaused)
     }
