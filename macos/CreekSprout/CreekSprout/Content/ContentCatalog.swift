@@ -60,21 +60,13 @@ struct ContentCatalog: Equatable, Sendable {
     )
 
     static let vs0 = ContentCatalog(
-        items: ContentCatalog.vs0Items,
-        crops: [
-            ContentID.mistRadishCrop: CropDefinition(
-                id: ContentID.mistRadishCrop,
-                seedItemID: ContentID.mistRadishSeed,
-                harvestItemID: ContentID.mistRadishItem,
-                stageDays: [1, 1, 1],
-                matureStageIndex: 2,
-                yield: 1
-            ),
-        ],
-        recipes: ContentCatalog.vs0Recipes,
-        placedObjects: ContentCatalog.vs0PlacedObjects,
+        items: ContentCatalog.vs0Items.merging(ContentCatalog.processingItems) { current, _ in current },
+        crops: ContentCatalog.vs0Crops,
+        recipes: ContentCatalog.vs0Recipes.merging(ContentCatalog.processingRecipes) { current, _ in current },
+        placedObjects: ContentCatalog.vs0PlacedObjects.merging(ContentCatalog.processingPlacedObjects) { current, _ in current },
         scenario: .vs0,
         displayNames: ContentCatalog.vs0DisplayNames
+            .merging(ContentCatalog.processingDisplayNames) { current, _ in current }
             .merging(WorldCatalog.displayNames) { current, _ in current }
             .merging(ProgressionCatalog.displayNames) { current, _ in current }
             .merging(CommunityCatalog.displayNames) { current, _ in current },
@@ -245,13 +237,30 @@ struct ContentCatalog: Equatable, Sendable {
     }
 
     func availableRecipeIDs(for state: GameState) -> [String] {
-        let starting = scenario.startingRecipeIDs.filter { isRecipeUnlocked($0, watershed: state.watershed) }
+        let starting = scenario.startingRecipeIDs.filter { id in
+            isRecipeUnlocked(id, watershed: state.watershed) && !(recipe(id: id)?.isProcessingRecipe ?? false)
+        }
         let extra = recipes.keys
             .filter { id in
-                !starting.contains(id) && isRecipeUnlocked(id, watershed: state.watershed)
+                !starting.contains(id)
+                    && isRecipeUnlocked(id, watershed: state.watershed)
+                    && !(recipe(id: id)?.isProcessingRecipe ?? false)
             }
             .sorted()
         return starting + extra
+    }
+
+    func availableProcessingRecipeIDs(for state: GameState) -> [String] {
+        let ordered = ContentID.processingRecipeIDs.filter { isRecipeUnlocked($0, watershed: state.watershed) }
+        let extra = recipes.values
+            .filter { recipe in
+                recipe.isProcessingRecipe
+                    && !ordered.contains(recipe.id)
+                    && isRecipeUnlocked(recipe.id, watershed: state.watershed)
+            }
+            .map(\.id)
+            .sorted()
+        return ordered + extra
     }
 
     func visibleGatherNodes(on mapID: String, state: GameState) -> [GatherNodeDefinition] {
@@ -281,28 +290,33 @@ extension NewGameScenarioDefinition {
         startMinute: GameClock.dayStartMinute,
         startingCurrency: 720,
         startingInventoryCapacity: 16,
-        playerStart: GridPosition(x: 5, y: 4),
+        playerStart: GridPosition(x: 7, y: 6),
         playerFacing: .down,
-        exitCell: GridPosition(x: 5, y: 0),
+        exitCell: GridPosition(x: 7, y: 0),
         startingItems: [
             InventoryQuantity(itemID: ContentID.mistRadishSeed, quantity: 8),
+            InventoryQuantity(itemID: ContentID.streamLeafSeed, quantity: 2),
+            InventoryQuantity(itemID: ContentID.amberBeanSeed, quantity: 2),
+            InventoryQuantity(itemID: ContentID.bellBerrySeed, quantity: 2),
+            InventoryQuantity(itemID: ContentID.honeyMelonSeed, quantity: 2),
         ],
         startingFarmCells: [
-            InitialFarmCell(position: GridPosition(x: 4, y: 1), cell: .matureMistRadish(plantedDay: 1)),
-            InitialFarmCell(position: GridPosition(x: 5, y: 1), cell: .matureMistRadish(plantedDay: 1)),
-            InitialFarmCell(position: GridPosition(x: 6, y: 1), cell: .matureMistRadish(plantedDay: 1)),
+            InitialFarmCell(position: GridPosition(x: 4, y: 3), cell: .matureMistRadish(plantedDay: 1)),
+            InitialFarmCell(position: GridPosition(x: 5, y: 3), cell: .matureMistRadish(plantedDay: 1)),
+            InitialFarmCell(position: GridPosition(x: 6, y: 3), cell: .matureMistRadish(plantedDay: 1)),
         ],
         startingRecipeIDs: [
             ContentID.woodenCrateRecipe,
             ContentID.stonePathRecipe,
             ContentID.compostRackRecipe,
             ContentID.canalSegmentRecipe,
+            ContentID.woodhoneyHearthRecipe,
         ],
         startingNpcSpawns: [
             InitialNpcSpawn(
                 npcID: ContentID.waterApprentice,
                 displayName: "水工学徒",
-                position: GridPosition(x: 6, y: 0),
+                position: GridPosition(x: 8, y: 6),
                 dialogueID: ContentID.waterApprenticeVs0Dialogue
             ),
         ],
@@ -330,6 +344,10 @@ private extension ContentCatalog {
     static let vs0DisplayNames: [String: String] = [
         "item.mist_radish_seed": "雾萝卜种子",
         "item.mist_radish": "雾萝卜",
+        "item.stream_leaf_seed": "溪叶菜种子",
+        "item.amber_bean_seed": "琥珀豆种子",
+        "item.bell_berry_seed": "铃莓种子",
+        "item.honey_melon_seed": "蜜穗瓜种子",
         "item.creek_wood": "溪木",
         "item.moss_stone": "苔石",
         "item.reed_fiber": "芦纤维",
@@ -430,6 +448,30 @@ private extension ContentCatalog {
             stackLimit: 99,
             baseSellPrice: 58
         ),
+        ContentID.streamLeafSeed: ItemDefinition(
+            id: ContentID.streamLeafSeed,
+            nameKey: "item.stream_leaf_seed",
+            category: "seed",
+            stackLimit: 99
+        ),
+        ContentID.amberBeanSeed: ItemDefinition(
+            id: ContentID.amberBeanSeed,
+            nameKey: "item.amber_bean_seed",
+            category: "seed",
+            stackLimit: 99
+        ),
+        ContentID.bellBerrySeed: ItemDefinition(
+            id: ContentID.bellBerrySeed,
+            nameKey: "item.bell_berry_seed",
+            category: "seed",
+            stackLimit: 99
+        ),
+        ContentID.honeyMelonSeed: ItemDefinition(
+            id: ContentID.honeyMelonSeed,
+            nameKey: "item.honey_melon_seed",
+            category: "seed",
+            stackLimit: 99
+        ),
         ContentID.creekWood: ItemDefinition(
             id: ContentID.creekWood,
             nameKey: "item.creek_wood",
@@ -477,6 +519,52 @@ private extension ContentCatalog {
             nameKey: "item.rain_barrel",
             category: "placeable",
             stackLimit: 99
+        ),
+    ]
+
+    /// Growth totals preserve the existing PRD economy baseline:
+    /// 2/4/6/7/8 watered days. Mist radish retains its frozen M1 behavior;
+    /// the four DEC-033 crops use all four world-art stages (0...3).
+    static let vs0Crops: [String: CropDefinition] = [
+        ContentID.mistRadishCrop: CropDefinition(
+            id: ContentID.mistRadishCrop,
+            seedItemID: ContentID.mistRadishSeed,
+            harvestItemID: ContentID.mistRadishItem,
+            stageDays: [1, 1, 1],
+            matureStageIndex: 2,
+            yield: 1
+        ),
+        ContentID.streamLeafCrop: CropDefinition(
+            id: ContentID.streamLeafCrop,
+            seedItemID: ContentID.streamLeafSeed,
+            harvestItemID: ContentID.creekGreensItem,
+            stageDays: [1, 1, 2],
+            matureStageIndex: 3,
+            yield: 1
+        ),
+        ContentID.amberBeanCrop: CropDefinition(
+            id: ContentID.amberBeanCrop,
+            seedItemID: ContentID.amberBeanSeed,
+            harvestItemID: ContentID.amberBeanItem,
+            stageDays: [2, 2, 2],
+            matureStageIndex: 3,
+            yield: 1
+        ),
+        ContentID.bellBerryCrop: CropDefinition(
+            id: ContentID.bellBerryCrop,
+            seedItemID: ContentID.bellBerrySeed,
+            harvestItemID: ContentID.bellBerryItem,
+            stageDays: [2, 2, 3],
+            matureStageIndex: 3,
+            yield: 2
+        ),
+        ContentID.honeyMelonCrop: CropDefinition(
+            id: ContentID.honeyMelonCrop,
+            seedItemID: ContentID.honeyMelonSeed,
+            harvestItemID: ContentID.honeyMelonItem,
+            stageDays: [2, 3, 3],
+            matureStageIndex: 3,
+            yield: 1
         ),
     ]
 
@@ -565,4 +653,153 @@ private extension ContentCatalog {
             footprint: [GridPosition(x: 0, y: 0)]
         ),
     ]
+
+    /// N-004 processing crops, finished goods, station, and recipes.
+    /// Crop sell prices copy PRD 6.8.3; finished goods are new +35% list prices.
+    static let processingItems: [String: ItemDefinition] = [
+        ContentID.creekGreensItem: ItemDefinition(
+            id: ContentID.creekGreensItem,
+            nameKey: "item.creek_greens",
+            category: "crop",
+            stackLimit: 99,
+            baseSellPrice: 92
+        ),
+        ContentID.amberBeanItem: ItemDefinition(
+            id: ContentID.amberBeanItem,
+            nameKey: "item.amber_bean",
+            category: "crop",
+            stackLimit: 99,
+            baseSellPrice: 48
+        ),
+        ContentID.bellBerryItem: ItemDefinition(
+            id: ContentID.bellBerryItem,
+            nameKey: "item.bell_berry",
+            category: "crop",
+            stackLimit: 99,
+            baseSellPrice: 44
+        ),
+        ContentID.honeyMelonItem: ItemDefinition(
+            id: ContentID.honeyMelonItem,
+            nameKey: "item.honey_melon",
+            category: "crop",
+            stackLimit: 99,
+            baseSellPrice: 205
+        ),
+        ContentID.honeySearedCreekGreensItem: ItemDefinition(
+            id: ContentID.honeySearedCreekGreensItem,
+            nameKey: "item.honey_seared_creek_greens",
+            category: "processed",
+            stackLimit: 99,
+            baseSellPrice: 124
+        ),
+        ContentID.honeySearedAmberBeanItem: ItemDefinition(
+            id: ContentID.honeySearedAmberBeanItem,
+            nameKey: "item.honey_seared_amber_bean",
+            category: "processed",
+            stackLimit: 99,
+            baseSellPrice: 65
+        ),
+        ContentID.honeyPreservedBellBerryItem: ItemDefinition(
+            id: ContentID.honeyPreservedBellBerryItem,
+            nameKey: "item.honey_preserved_bell_berry",
+            category: "processed",
+            stackLimit: 99,
+            baseSellPrice: 59
+        ),
+        ContentID.honeySearedHoneyMelonItem: ItemDefinition(
+            id: ContentID.honeySearedHoneyMelonItem,
+            nameKey: "item.honey_seared_honey_melon",
+            category: "processed",
+            stackLimit: 99,
+            baseSellPrice: 277
+        ),
+        ContentID.woodhoneyHearthItem: ItemDefinition(
+            id: ContentID.woodhoneyHearthItem,
+            nameKey: "item.woodhoney_hearth",
+            category: "placeable",
+            stackLimit: 99
+        ),
+    ]
+
+    static let processingRecipes: [String: RecipeDefinition] = [
+        ContentID.woodhoneyHearthRecipe: RecipeDefinition(
+            id: ContentID.woodhoneyHearthRecipe,
+            nameKey: "recipe.woodhoney_hearth",
+            inputs: [
+                RecipeStack(itemID: ContentID.creekWood, quantity: 8),
+                RecipeStack(itemID: ContentID.mossStone, quantity: 4),
+            ],
+            outputs: [RecipeStack(itemID: ContentID.woodhoneyHearthItem, quantity: 1)],
+            placedObjectID: ContentID.woodhoneyHearthObject
+        ),
+        ContentID.honeySearedCreekGreensRecipe: processingRecipe(
+            id: ContentID.honeySearedCreekGreensRecipe,
+            nameKey: "recipe.honey_seared_creek_greens",
+            inputID: ContentID.creekGreensItem,
+            outputID: ContentID.honeySearedCreekGreensItem
+        ),
+        ContentID.honeySearedAmberBeanRecipe: processingRecipe(
+            id: ContentID.honeySearedAmberBeanRecipe,
+            nameKey: "recipe.honey_seared_amber_bean",
+            inputID: ContentID.amberBeanItem,
+            outputID: ContentID.honeySearedAmberBeanItem
+        ),
+        ContentID.honeyPreservedBellBerryRecipe: processingRecipe(
+            id: ContentID.honeyPreservedBellBerryRecipe,
+            nameKey: "recipe.honey_preserved_bell_berry",
+            inputID: ContentID.bellBerryItem,
+            outputID: ContentID.honeyPreservedBellBerryItem
+        ),
+        ContentID.honeySearedHoneyMelonRecipe: processingRecipe(
+            id: ContentID.honeySearedHoneyMelonRecipe,
+            nameKey: "recipe.honey_seared_honey_melon",
+            inputID: ContentID.honeyMelonItem,
+            outputID: ContentID.honeySearedHoneyMelonItem
+        ),
+    ]
+
+    static let processingPlacedObjects: [String: PlacedObjectDefinition] = [
+        ContentID.woodhoneyHearthObject: PlacedObjectDefinition(
+            id: ContentID.woodhoneyHearthObject,
+            nameKey: "item.woodhoney_hearth",
+            itemID: ContentID.woodhoneyHearthItem,
+            category: "processing",
+            footprint: [GridPosition(x: 0, y: 0)]
+        ),
+    ]
+
+    static let processingDisplayNames: [String: String] = [
+        "item.creek_greens": "溪叶菜",
+        "item.amber_bean": "琥珀豆",
+        "item.bell_berry": "铃花莓",
+        "item.honey_melon": "蜜穗瓜",
+        "item.honey_seared_creek_greens": "蜜烤溪叶菜",
+        "item.honey_seared_amber_bean": "蜜烤琥珀豆",
+        "item.honey_preserved_bell_berry": "蜜酿铃花莓",
+        "item.honey_seared_honey_melon": "蜜炙蜜穗瓜",
+        "item.woodhoney_hearth": "木蜜灶台",
+        "recipe.woodhoney_hearth": "木蜜灶台",
+        "recipe.honey_seared_creek_greens": "蜜烤溪叶菜",
+        "recipe.honey_seared_amber_bean": "蜜烤琥珀豆",
+        "recipe.honey_preserved_bell_berry": "蜜酿铃花莓",
+        "recipe.honey_seared_honey_melon": "蜜炙蜜穗瓜",
+    ]
+
+    private static func processingRecipe(
+        id: String,
+        nameKey: String,
+        inputID: String,
+        outputID: String
+    ) -> RecipeDefinition {
+        RecipeDefinition(
+            id: id,
+            nameKey: nameKey,
+            inputs: [RecipeStack(itemID: inputID, quantity: 1)],
+            outputs: [RecipeStack(itemID: outputID, quantity: 1)],
+            placedObjectID: nil,
+            requiredUnlockID: nil,
+            requiredPlacedObjectID: ContentID.woodhoneyHearthObject,
+            staminaCost: ContentID.processingStaminaCost
+        )
+    }
 }

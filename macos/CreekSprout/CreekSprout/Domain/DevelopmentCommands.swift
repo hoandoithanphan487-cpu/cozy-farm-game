@@ -6,6 +6,7 @@ enum DevelopmentCommands {
         InventoryQuantity(itemID: ContentID.creekWood, quantity: 12),
         InventoryQuantity(itemID: ContentID.mossStone, quantity: 4),
         InventoryQuantity(itemID: ContentID.reedFiber, quantity: 6),
+        InventoryQuantity(itemID: ContentID.creekGreensItem, quantity: 2),
     ]
 
     static func grantMaterialKit(

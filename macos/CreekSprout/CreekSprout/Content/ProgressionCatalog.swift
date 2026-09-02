@@ -29,7 +29,7 @@ enum ProgressionCatalog {
         GatherNodeDefinition(
             id: ContentID.farmWoodGather,
             mapID: ContentID.farmHomestead,
-            position: GridPosition(x: 2, y: 5),
+            position: GridPosition(x: 1, y: 6),
             label: "溪木堆",
             yields: [RecipeStack(itemID: ContentID.creekWood, quantity: 8)],
             oneTime: true,
@@ -39,7 +39,7 @@ enum ProgressionCatalog {
         GatherNodeDefinition(
             id: ContentID.farmMossGather,
             mapID: ContentID.farmHomestead,
-            position: GridPosition(x: 7, y: 5),
+            position: GridPosition(x: 12, y: 6),
             label: "苔石堆",
             yields: [RecipeStack(itemID: ContentID.mossStone, quantity: 4)],
             oneTime: true,
@@ -49,7 +49,7 @@ enum ProgressionCatalog {
         GatherNodeDefinition(
             id: ContentID.farmReedGather,
             mapID: ContentID.farmHomestead,
-            position: GridPosition(x: 9, y: 0),
+            position: GridPosition(x: 11, y: 1),
             label: "芦丛",
             yields: [RecipeStack(itemID: ContentID.reedFiber, quantity: 6)],
             oneTime: true,
@@ -59,7 +59,7 @@ enum ProgressionCatalog {
         GatherNodeDefinition(
             id: ContentID.marketWoodGather,
             mapID: ContentID.creekMarket,
-            position: GridPosition(x: 3, y: 1),
+            position: GridPosition(x: 6, y: 4),
             label: "漂木架",
             yields: [RecipeStack(itemID: ContentID.creekWood, quantity: 6)],
             oneTime: true,
@@ -69,7 +69,7 @@ enum ProgressionCatalog {
         GatherNodeDefinition(
             id: ContentID.marketMossGather,
             mapID: ContentID.creekMarket,
-            position: GridPosition(x: 9, y: 2),
+            position: GridPosition(x: 13, y: 4),
             label: "埠头苔石",
             yields: [RecipeStack(itemID: ContentID.mossStone, quantity: 8)],
             oneTime: true,
@@ -79,7 +79,7 @@ enum ProgressionCatalog {
         GatherNodeDefinition(
             id: ContentID.marketReedGather,
             mapID: ContentID.creekMarket,
-            position: GridPosition(x: 4, y: 7),
+            position: GridPosition(x: 12, y: 4),
             label: "浅滩芦丛",
             yields: [RecipeStack(itemID: ContentID.reedFiber, quantity: 6)],
             oneTime: true,
@@ -89,7 +89,7 @@ enum ProgressionCatalog {
         GatherNodeDefinition(
             id: ContentID.restoredBrookGather,
             mapID: ContentID.creekMarket,
-            position: GridPosition(x: 8, y: 1),
+            position: GridPosition(x: 13, y: 3),
             label: "回水浅滩",
             yields: [
                 RecipeStack(itemID: ContentID.creekWood, quantity: 4),

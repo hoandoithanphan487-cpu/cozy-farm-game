@@ -305,7 +305,9 @@ final class EconomySaveTests: XCTestCase {
     }
 
     func testPlacementOverlappingPlayerIsRejectedAndFallsBack() throws {
-        try assertCorruptionRejectedAndFallsBack(valid: GameState.vs0NewGame(catalog: catalog)) { payload in
+        var state = GameState.vs0NewGame(catalog: catalog)
+        state.position = GridPosition(x: 5, y: 4)
+        try assertCorruptionRejectedAndFallsBack(valid: state) { payload in
             payload["placed_objects"] = [
                 placedObjectJSON(origin: GridPosition(x: 5, y: 4)),
             ]

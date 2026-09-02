@@ -65,8 +65,8 @@ final class CommunitySaveTests: XCTestCase {
         try store.save(state)
 
         let payload = try decodedJSON(at: store.primaryURL)
-        XCTAssertEqual(SaveSchema.currentVersion, 8)
-        XCTAssertEqual((payload["schema_version"] as? NSNumber)?.intValue, 8)
+        XCTAssertEqual(SaveSchema.currentVersion, 10)
+        XCTAssertEqual((payload["schema_version"] as? NSNumber)?.intValue, SaveSchema.currentVersion)
         let community = try XCTUnwrap(payload["community"] as? [String: Any])
         XCTAssertEqual((community["standing"] as? NSNumber)?.intValue, 42)
         XCTAssertNotNil(community["active_events"])

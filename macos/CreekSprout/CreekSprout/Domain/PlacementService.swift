@@ -140,6 +140,12 @@ struct PlacementService: Sendable {
         case .failure:
             return Preparation(state: nil, failure: .missingItem)
         case .success(let inventory):
+            guard StoryInventoryReservation.isPreserved(
+                state: state,
+                candidateInventory: inventory
+            ) else {
+                return Preparation(state: nil, failure: .missingItem)
+            }
             var next = state
             next.inventory = inventory
             next.placedObjects.append(

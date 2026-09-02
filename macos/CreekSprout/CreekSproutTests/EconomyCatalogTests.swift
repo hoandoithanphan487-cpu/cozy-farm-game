@@ -49,7 +49,8 @@ final class EconomyCatalogTests: XCTestCase {
                 ContentID.stonePathRecipe,
                 ContentID.compostRackRecipe,
                 ContentID.canalSegmentRecipe,
-            ]
+                ContentID.woodhoneyHearthRecipe,
+        ]
         )
     }
 }

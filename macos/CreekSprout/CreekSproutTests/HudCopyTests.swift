@@ -14,6 +14,8 @@ final class HudCopyTests: XCTestCase {
         XCTAssertTrue(hints.contains("开始核实"))
         XCTAssertTrue(hints.contains("[Y]切换社区行动"))
         XCTAssertTrue(hints.contains("[B]提交所选行动"))
+        XCTAssertTrue(hints.contains("[Q]角色信息"))
+        XCTAssertFalse(hints.contains("[I]角色信息"))
         XCTAssertTrue(hints.contains("可选恢复"))
         XCTAssertTrue(hints.contains("不是首次核实入口"))
         XCTAssertTrue(hints.contains("V 不是入口") || hints.contains("不是首次核实入口"))

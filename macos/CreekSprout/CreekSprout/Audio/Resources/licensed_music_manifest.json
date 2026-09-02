@@ -1,0 +1,40 @@
+{
+  "manifest_version": 1,
+  "product": "CreekSprout",
+  "selection_approved_by": "Product Owner",
+  "selection_approved_date": "2026-08-25",
+  "license_terms_url": "https://halto-freesounds.com/terms/",
+  "license_summary": "Free commercial and non-commercial project use and editing permitted; attribution optional. Standalone redistribution, false authorship, streaming-platform distribution, AI training, and Content ID registration are prohibited.",
+  "tracks": [
+    {
+      "cue_id": "music.farm.today_is_a_good_day.v01",
+      "map_layer": "farm",
+      "title": "今日もいい日 / Today Is a Good Day",
+      "creator": "HALTO",
+      "source_page": "https://halto-freesounds.com/today-is-a-good-day/",
+      "source_export": "official loop MP3",
+      "runtime_file": "music_farm_today_is_a_good_day_v01.mp3",
+      "sample_rate_hz": 44100,
+      "channels": 2,
+      "bit_rate_bps": 128000,
+      "valid_frames": 2585405,
+      "duration_seconds": 58.562437,
+      "sha256": "7e8dc08731715ae8b22b9e399b1ce507e2279840324d7a87db4356bfe101c8e0"
+    },
+    {
+      "cue_id": "music.creek.bouncy_steps.v01",
+      "map_layer": "creek",
+      "title": "はずむ足どり / Bouncy Steps",
+      "creator": "HALTO",
+      "source_page": "https://halto-freesounds.com/bouncy-steps/",
+      "source_export": "official loop MP3",
+      "runtime_file": "music_creek_bouncy_steps_v01.mp3",
+      "sample_rate_hz": 44100,
+      "channels": 2,
+      "bit_rate_bps": 128000,
+      "valid_frames": 2515010,
+      "duration_seconds": 56.972625,
+      "sha256": "7ed96174b5d6e074cdd6bb9a7de2b036f4051c2c452c375abbf4101ada87a2e7"
+    }
+  ]
+}

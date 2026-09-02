@@ -1,0 +1,14 @@
+{
+  "schema_version": 1,
+  "decision": "DEC-033",
+  "assets": [
+    {
+      "file": "prop_woodhoney_hearth.png",
+      "width": 48,
+      "height": 48,
+      "scope": "runtime",
+      "anchor": "bottom-center",
+      "sha256": "bab5daf61aac04c3a9a29c638777da065178a8b93e83a731478282e486469475"
+    }
+  ]
+}

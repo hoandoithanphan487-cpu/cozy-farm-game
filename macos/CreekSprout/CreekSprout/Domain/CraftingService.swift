@@ -24,6 +24,12 @@ struct CraftingService: Sendable {
             case .failure:
                 return .failure(.insufficientMaterials)
             case .success(let next):
+                guard StoryInventoryReservation.isPreserved(
+                    state: state,
+                    candidateInventory: next
+                ) else {
+                    return .failure(.insufficientMaterials)
+                }
                 inventory = next
             }
         }

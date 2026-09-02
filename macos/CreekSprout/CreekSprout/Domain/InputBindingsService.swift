@@ -21,7 +21,29 @@ struct InputBindingResult: Equatable {
     }
 }
 
+enum GameplayInputRoute: Equatable {
+    case action(String)
+    case showCharacterInfo
+}
+
 enum InputBindingsService {
+    static func route(
+        for binding: String,
+        device: InputDeviceKind,
+        settings: SettingsState
+    ) -> GameplayInputRoute? {
+        // Configured gameplay actions win first. This preserves I → deposit and
+        // also keeps a user rebind from being silently intercepted by the UI.
+        if let actionID = action(forBinding: binding, device: device, settings: settings) {
+            return .action(actionID)
+        }
+        if device == .keyboardMouse,
+           binding == InputBindingDefinitions.characterInfoKeyboardBinding {
+            return .showCharacterInfo
+        }
+        return nil
+    }
+
     static func rebind(
         settings: inout SettingsState,
         device: InputDeviceKind,

@@ -5,6 +5,8 @@ import Foundation
 enum InputBindingDefinitions {
     static let keyboardMouseDevice = "keyboard_mouse"
     static let gamepadDevice = "gamepad"
+    /// Presentation-only shortcut; it intentionally lives outside the rebinding table.
+    static let characterInfoKeyboardBinding = "Key:Q"
 
     static let actionMoveUp = "brookseed.input.move_up"
     static let actionMoveDown = "brookseed.input.move_down"
@@ -221,6 +223,10 @@ enum InputBindingDefinitions {
         default:
             return binding
         }
+    }
+
+    static var characterInfoKeyboardLabel: String {
+        bindingLabel(characterInfoKeyboardBinding)
     }
 
     private static func keyLabel(_ key: String) -> String {

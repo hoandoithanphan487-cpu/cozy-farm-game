@@ -34,24 +34,24 @@ final class N003PixelPipelineEvidenceTests: XCTestCase {
         try writeScenePNG(scene, name: "01-newgame-farm-tiles-crops.png", to: screenshots)
 
         scene.selectTool(.harvest)
-        walk(scene, [.down, .down])
+        walkToward(scene, x: 4, y: 4, thenFace: .down)
         scene.performAction()
         XCTAssertTrue(scene.lastFeedback.contains("1/3") || scene.lastFeedback.contains("收获"))
         XCTAssertEqual(scene.audioService.events.last { $0.kind == "sfx" }?.name, "harvest")
         try writeScenePNG(scene, name: "02-harvest-pixel-crop.png", to: screenshots)
 
-        walk(scene, [.left, .up, .down])
+        walkToward(scene, x: 5, y: 4, thenFace: .down)
         scene.performAction()
         try writeScenePNG(scene, name: "02-harvest-2.png", to: screenshots)
 
-        walk(scene, [.right, .right, .up, .down])
+        walkToward(scene, x: 6, y: 4, thenFace: .down)
         scene.performAction()
         try writeScenePNG(scene, name: "02-harvest-3.png", to: screenshots)
 
         scene.depositShipping()
         XCTAssertTrue(scene.lastFeedbackIsSuccess)
 
-        walkToward(scene, x: 6, y: 1, thenFace: .down)
+        walkToward(scene, x: 8, y: 5, thenFace: .up)
         scene.talkToNpc()
         XCTAssertTrue(scene.hudText.contains("【对话】"), scene.lastFeedback)
         try writeScenePNG(scene, name: "03-talk-badge-expression.png", to: screenshots)
@@ -63,7 +63,7 @@ final class N003PixelPipelineEvidenceTests: XCTestCase {
         XCTAssertEqual(scene.gameState.clock.day, 2, scene.lastFeedback)
         XCTAssertEqual(scene.audioService.weatherLayer, .rain)
 
-        walkToward(scene, x: 5, y: 0)
+        walkToward(scene, x: 7, y: 0)
         scene.performAction()
         XCTAssertEqual(scene.gameState.currentMapID, ContentID.creekMarket, scene.lastFeedback)
         try writeScenePNG(scene, name: "04-market-textured-roles.png", to: screenshots)
@@ -74,20 +74,26 @@ final class N003PixelPipelineEvidenceTests: XCTestCase {
         let canvas = CGSize(width: 720, height: 280)
         let scene = SKScene(size: canvas)
         scene.backgroundColor = SKColor(red: 0.16, green: 0.22, blue: 0.18, alpha: 1)
-        let ids = [ContentID.waterApprentice, ContentID.seedSteward, ContentID.creekWarden]
-        for (index, id) in ids.enumerated() {
+        let roles: [(id: String, badge: Bool)] = [
+            (PlayerVisualID.sprout, false),
+            (ContentID.waterApprentice, true),
+            (ContentID.seedSteward, true),
+            (ContentID.creekWarden, true),
+        ]
+        for (index, role) in roles.enumerated() {
             let node = CharacterVisualNode(
-                definition: CharacterVisualCatalog.visual(for: id),
+                definition: CharacterVisualCatalog.visual(for: role.id),
                 cellSize: 72,
-                showsTalkBadge: true
+                showsTalkBadge: role.badge,
+                showsName: true
             )
             node.setMotionAllowed(false)
             node.applySnapshotPose(.idle)
-            XCTAssertTrue(node.usesPixelTexture, id)
-            node.position = CGPoint(x: 120 + CGFloat(index) * 200, y: 130)
+            XCTAssertTrue(node.usesPixelTexture, role.id)
+            node.position = CGPoint(x: 90 + CGFloat(index) * 160, y: 130)
             scene.addChild(node)
         }
-        try writePNG(scene, size: canvas, to: directory.appendingPathComponent("00-three-textured-roles.png"))
+        try writePNG(scene, size: canvas, to: directory.appendingPathComponent("00-four-textured-roles.png"))
     }
 
     private func writeCropAndTileCatalog(to directory: URL) throws {
@@ -147,7 +153,7 @@ final class N003PixelPipelineEvidenceTests: XCTestCase {
     private func writeNFR007Magnification(to evidence: URL) throws {
         let screenshots = evidence.appendingPathComponent("screenshots", isDirectory: true)
         try FileManager.default.createDirectory(at: screenshots, withIntermediateDirectories: true)
-        let kinds: [PixelAssetKind] = [.charWaterApprentice, .cropMistRadish, .tileGrass]
+        let kinds: [PixelAssetKind] = [.charPlayer, .charWaterApprentice, .cropMistRadish, .tileGrass]
         let factor = 8
         let columnWidth = 32 * factor + 48
         let canvas = NSImage(size: NSSize(width: columnWidth * kinds.count, height: 48 * factor + 40))

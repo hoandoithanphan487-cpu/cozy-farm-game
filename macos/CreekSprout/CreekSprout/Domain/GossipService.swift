@@ -36,6 +36,9 @@ enum GossipService {
         state: inout GameState,
         catalog: ContentCatalog
     ) -> [String] {
+        guard !state.storyCampaign.m3OffersPaused else {
+            return []
+        }
         let day = state.clock.day
         var created: [String] = []
         for definition in catalog.gossipEvents.values.sorted(by: { $0.id < $1.id }) {

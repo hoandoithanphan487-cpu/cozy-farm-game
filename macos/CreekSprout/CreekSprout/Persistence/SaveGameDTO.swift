@@ -3,7 +3,9 @@ import Foundation
 enum SaveSchema {
     /// v7 adds `settings` (input bindings snapshot and accessibility choices).
     /// v8 adds `selected_recipe_id` (crafting selection survives map travel and reload).
-    static let currentVersion = 8
+    /// v9 adds persistent livestock and cat-shop supply receipts.
+    /// v10 adds campaign generations, story runtime state/metrics, and crop care.
+    static let currentVersion = 10
 }
 
 struct SaveGameDTO: Equatable, Codable, Sendable {
@@ -27,6 +29,14 @@ struct SaveGameDTO: Equatable, Codable, Sendable {
     var relationships: RelationshipState
     var settings: SettingsState
     var selectedRecipeID: String?
+    var livestock: LivestockState
+    var catShop: CatShopState
+    var campaignID: String
+    var generationMetadata: SaveGenerationMetadata
+    var storyCampaign: StoryCampaignState
+    var storyMetrics: StoryMetricsState
+    /// Optional so saves written before foster orders keep decoding.
+    var fosterOrders: FosterOrderState?
 
     enum CodingKeys: String, CodingKey {
         case schemaVersion = "schema_version"
@@ -49,9 +59,20 @@ struct SaveGameDTO: Equatable, Codable, Sendable {
         case relationships
         case settings
         case selectedRecipeID = "selected_recipe_id"
+        case livestock
+        case catShop = "cat_shop"
+        case campaignID = "campaign_id"
+        case generationMetadata = "generation_metadata"
+        case storyCampaign = "story_campaign"
+        case storyMetrics = "story_metrics"
+        case fosterOrders = "foster_orders"
     }
 
-    init(state: GameState, schemaVersion: Int = SaveSchema.currentVersion) {
+    init(
+        state: GameState,
+        schemaVersion: Int = SaveSchema.currentVersion,
+        generationMetadata: SaveGenerationMetadata? = nil
+    ) {
         self.schemaVersion = schemaVersion
         position = state.position
         facing = state.facing
@@ -100,6 +121,27 @@ struct SaveGameDTO: Equatable, Codable, Sendable {
         self.relationships = relationships
         settings = state.settings
         selectedRecipeID = state.selectedRecipeID
+        var livestock = state.livestock
+        livestock.sortAnimals()
+        self.livestock = livestock
+        var catShop = state.catShop
+        catShop.sortReceipts()
+        self.catShop = catShop
+        campaignID = state.campaignID
+        self.generationMetadata = generationMetadata ?? .neutral(
+            campaignID: state.campaignID,
+            sourceSlotName: "slot_0"
+        )
+        var storyCampaign = state.storyCampaign
+        storyCampaign.canonicalize()
+        self.storyCampaign = storyCampaign
+        var storyMetrics = state.storyMetrics
+        storyMetrics.canonicalize()
+        self.storyMetrics = storyMetrics
+        var fosterOrders = state.fosterOrders
+        fosterOrders.orders.sort { $0.issuanceID < $1.issuanceID }
+        fosterOrders.convertedAnimalIDs.sort()
+        self.fosterOrders = fosterOrders
     }
 
     func makeState() throws -> GameState {
@@ -131,9 +173,16 @@ struct SaveGameDTO: Equatable, Codable, Sendable {
             community: community,
             relationships: relationships,
             settings: settings,
-            selectedRecipeID: selectedRecipeID
+            selectedRecipeID: selectedRecipeID,
+            livestock: livestock,
+            catShop: catShop,
+            campaignID: campaignID,
+            storyCampaign: storyCampaign,
+            storyMetrics: storyMetrics
         )
-        return RelationshipService.reconcile(GossipService.reconcile(WatershedService.reconcile(restored)))
+        var restoredWithFoster = restored
+        restoredWithFoster.fosterOrders = fosterOrders ?? .empty
+        return RelationshipService.reconcile(GossipService.reconcile(WatershedService.reconcile(restoredWithFoster)))
     }
 }
 
@@ -148,6 +197,8 @@ struct FarmCellRecord: Equatable, Codable, Sendable {
     var stageProgressDays: Int
     var plantedDay: Int
     var readyToHarvest: Bool
+    var dryStreak: Int
+    var cropCondition: CropCondition
 
     init(position: GridPosition, cell: FarmCell) {
         x = position.x
@@ -160,6 +211,8 @@ struct FarmCellRecord: Equatable, Codable, Sendable {
         stageProgressDays = cell.stageProgressDays
         plantedDay = cell.plantedDay
         readyToHarvest = cell.readyToHarvest
+        dryStreak = cell.dryStreak
+        cropCondition = cell.cropCondition
     }
 
     var cell: FarmCell {
@@ -171,7 +224,9 @@ struct FarmCellRecord: Equatable, Codable, Sendable {
             cropStage: cropStage,
             stageProgressDays: stageProgressDays,
             plantedDay: plantedDay,
-            readyToHarvest: readyToHarvest
+            readyToHarvest: readyToHarvest,
+            dryStreak: dryStreak,
+            cropCondition: cropCondition
         )
     }
 }

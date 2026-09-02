@@ -43,6 +43,22 @@ final class PlacementServiceTests: XCTestCase {
         XCTAssertTrue(state.placedObjects.isEmpty)
     }
 
+    func testRearCultivationPlotDoesNotExpandFurniturePlacementBounds() {
+        var state = GameState.m1NewGame(seedQuantity: 0)
+        state.position = GridPosition(x: 7, y: 11)
+        XCTAssertTrue(grant(&state, itemID: ContentID.woodenCrateItem))
+        let result = PlacementService.place(
+            state: state,
+            definitionID: ContentID.woodenCrateObject,
+            origin: GridPosition(x: 7, y: 12),
+            facing: .up,
+            catalog: catalog
+        )
+        XCTAssertEqual(result, .failure(.outOfBounds))
+        XCTAssertTrue(state.placedObjects.isEmpty)
+        XCTAssertEqual(InventoryService.count(state.inventory, itemID: ContentID.woodenCrateItem), 1)
+    }
+
     func testCropConflictDoesNotConsumeItem() {
         var state = GameState.vs0NewGame(catalog: catalog)
         state.position = GridPosition(x: 4, y: 2)
@@ -51,7 +67,7 @@ final class PlacementServiceTests: XCTestCase {
         let result = PlacementService.place(
             state: state,
             definitionID: ContentID.woodenCrateObject,
-            origin: GridPosition(x: 4, y: 1),
+            origin: GridPosition(x: 4, y: 3),
             facing: .up,
             catalog: catalog
         )
@@ -105,7 +121,7 @@ final class PlacementServiceTests: XCTestCase {
 
     func testBlockingExitFailsWithoutConsuming() {
         var state = GameState.m1NewGame(seedQuantity: 0)
-        state.position = GridPosition(x: 5, y: 1)
+        state.position = GridPosition(x: 7, y: 1)
         XCTAssertTrue(grant(&state, itemID: ContentID.woodenCrateItem))
         let before = state
         let result = PlacementService.place(

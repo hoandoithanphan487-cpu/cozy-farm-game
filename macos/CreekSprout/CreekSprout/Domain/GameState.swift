@@ -1,3 +1,5 @@
+import Foundation
+
 struct GameState: Equatable, Sendable {
     var position: GridPosition
     var facing: Direction
@@ -18,6 +20,12 @@ struct GameState: Equatable, Sendable {
     var relationships: RelationshipState = .empty
     var settings: SettingsState = .defaults
     var selectedRecipeID: String?
+    var livestock: LivestockState = .empty
+    var catShop: CatShopState = .empty
+    var campaignID: String = CampaignIdentity.placeholder
+    var storyCampaign: StoryCampaignState = .newGame
+    var storyMetrics: StoryMetricsState = .empty
+    var fosterOrders: FosterOrderState = .empty
 
     static let spikeDefault = GameState(
         position: GridPosition(x: 4, y: 2),
@@ -45,7 +53,10 @@ struct GameState: Equatable, Sendable {
         )
     }
 
-    static func vs0NewGame(catalog: ContentCatalog = .vs0) -> GameState {
+    static func vs0NewGame(
+        catalog: ContentCatalog = .vs0,
+        campaignID: String = CampaignIdentity.make()
+    ) -> GameState {
         let scenario = catalog.scenario
         var cells: [GridPosition: FarmCell] = [:]
         for record in scenario.startingFarmCells {
@@ -63,7 +74,9 @@ struct GameState: Equatable, Sendable {
             economy: EconomyState(balance: scenario.startingCurrency),
             placedObjects: [],
             currentMapID: ContentID.farmHomestead,
-            community: .newGame(balance: catalog.communityBalance)
+            community: .newGame(balance: catalog.communityBalance),
+            livestock: LivestockCatalog.starterHerd(startDay: scenario.startDay),
+            campaignID: campaignID
         )
     }
 

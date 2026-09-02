@@ -8,16 +8,28 @@ struct SleepUseCase: Sendable {
         state: inout GameState,
         clock: ClockSystem,
         catalog: ContentCatalog,
-        store: SaveStore? = nil
+        store: SaveStore? = nil,
+        persist: (@Sendable (GameState) throws -> Void)? = nil,
+        stageObserver: ((SleepPipelineStage, GameState) throws -> Void)? = nil
     ) throws -> DayEndSummary {
         let previousState = state
         let previousClock = clock.snapshot()
         var candidate = state
-        let summary = dayCycle.settle(state: &candidate, clock: clock, catalog: catalog)
         do {
-            if let store {
+            let summary = try dayCycle.settleTransaction(
+                state: &candidate,
+                clock: clock,
+                catalog: catalog,
+                stageObserver: stageObserver
+            )
+            try SaveValidation.validate(candidate, catalog: catalog)
+            try stageObserver?(.validated, candidate)
+            if let persist {
+                try persist(candidate)
+            } else if let store {
                 try store.save(candidate)
             }
+            try stageObserver?(.saved, candidate)
             state = candidate
             return summary
         } catch {

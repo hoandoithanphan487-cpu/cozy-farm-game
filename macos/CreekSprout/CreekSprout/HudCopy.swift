@@ -7,6 +7,8 @@
 //  wording (R1), and feedback prefixes that do not rely on color alone.
 //
 
+import Foundation
+
 enum HudCopy {
     static let firstVerifyChoice = "向青砚核实"
     static let startVerifyChoice = "开始核实"
@@ -45,6 +47,8 @@ enum HudCopy {
             "[WASD/方向键]移动  走到石阶进出地图  [空格]面对石阶也可进出",
             "[1-4]工具  [空格/回车]动作/采集  [T]交谈（走到角色旁）",
             "[I]投入出售箱  [U]取回  [C]制作  [R]切换配方",
+            "[Q]角色信息（打开/关闭）",
+            "[空格]对准木蜜灶台打开加工面板  面板中 [C]加工 [R]切换配方",
             "[P]放置预览  [F]确认放置  [N]睡眠日结  [K]保存  [L]读取",
             "[Y]切换社区行动  [B]提交所选行动（首次核实：先「\(startVerifyChoice)」再「\(firstVerifyChoice)」；V 不是入口）",
             "[V]可选恢复：\(optionalRecoveryChoice)（不是首次核实入口）",
@@ -73,6 +77,16 @@ enum HudCopy {
 
     static func noNpcToTalk() -> String {
         "附近没有可以交谈的人。走到角色所在格或面对他们再按 T。"
+    }
+
+    static func playerToast(message: String, isSuccess: Bool) -> String {
+        isSuccess ? "成功  \(message)" : "失败  \(message)"
+    }
+
+    static func compactGoal(_ goalLine: String) -> String {
+        goalLine
+            .replacingOccurrences(of: "当前目标：", with: "")
+            .replacingOccurrences(of: "  ", with: " · ")
     }
 
     static func feedbackLine(message: String, isSuccess: Bool) -> String {

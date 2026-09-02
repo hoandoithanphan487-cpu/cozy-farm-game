@@ -1,0 +1,27 @@
+{
+  "schema_version": 1,
+  "task": "N-015 portrait-derived character runtime R1",
+  "authorization": "Product Owner requested regeneration from retained HD portraits and runtime integration",
+  "prompt_version": "n-015-portrait-derived-character-r1",
+  "assets": [
+    {"file": "char_player.png", "width": 32, "height": 48, "scope": "runtime", "anchor": "bottom-center", "sha256": "f330fb1bdfd23779201a9c15b9f21a143fd466b37337b14dbeeb1719d19dcc44"},
+    {"file": "char_player_walk.png", "width": 128, "height": 192, "scope": "runtime", "anchor": "bottom-center", "sha256": "5c53807e7f9cae448155a651216cbd771aab185b7e4de3f3f963dd93609b1a03"},
+    {"file": "char_player_action_hoe.png", "width": 128, "height": 192, "scope": "runtime", "anchor": "bottom-center", "sha256": "343add0ca6a23a2794f26fa813ef8f4deebc4ee09efb0f392c9d6bd8d736670d"},
+    {"file": "char_player_action_watering_can.png", "width": 128, "height": 192, "scope": "runtime", "anchor": "bottom-center", "sha256": "f40de772bf45342cecf996233c6a9c82c65e87c0d0f5b96170aa49ce64869c99"},
+    {"file": "char_player_action_harvest_glove.png", "width": 128, "height": 192, "scope": "runtime", "anchor": "bottom-center", "sha256": "d48940d7d19abfa3cce6feb904fa0fc6ebae788410e722cc6d9a613db06f6566"},
+    {"file": "char_water_apprentice.png", "width": 32, "height": 48, "scope": "runtime", "anchor": "bottom-center", "sha256": "a13d1c24e95614bb5645f5dafed11a9bf9049ec13bdec175aada1ea64886603a"},
+    {"file": "char_water_apprentice_walk.png", "width": 128, "height": 192, "scope": "runtime", "anchor": "bottom-center", "sha256": "e3a8ef99aedb51dddcab60b364d88b7ab5a721dec933b15d6faad334f5cafa16"},
+    {"file": "char_seed_steward.png", "width": 32, "height": 48, "scope": "runtime", "anchor": "bottom-center", "sha256": "703294dbd73139f33c92bfeaa9ace410aed6d076db320e313a9480545d891c78"},
+    {"file": "char_seed_steward_walk.png", "width": 128, "height": 192, "scope": "runtime", "anchor": "bottom-center", "sha256": "6ad4dbef3bcb55aa31fa748f4c67abc781b0b05d0733c9afe584b9af8f022b87"},
+    {"file": "char_creek_warden.png", "width": 32, "height": 48, "scope": "runtime", "anchor": "bottom-center", "sha256": "d63996f8bb795fff3999ce83f6dda229a58cd48766097e60d77e63f1a18b2ea2"},
+    {"file": "char_creek_warden_walk.png", "width": 128, "height": 192, "scope": "runtime", "anchor": "bottom-center", "sha256": "08d1bf74b85460d258f82911efdefdc6ea220f75105f8393052be8b445d400b2"},
+    {"file": "char_neighbor_hearsay.png", "width": 32, "height": 48, "scope": "runtime", "anchor": "bottom-center", "sha256": "ae3e3eaabaf4a88db01035abd41fab8d26206aa84880ab701996e4df406e7927"},
+    {"file": "char_neighbor_hearsay_walk.png", "width": 128, "height": 192, "scope": "runtime", "anchor": "bottom-center", "sha256": "b1d8161b86a97913818e465eabda481b0e4a60ff03a98c2b2e786c0d5591506b"},
+    {"file": "char_neighbor_storyteller.png", "width": 32, "height": 48, "scope": "runtime", "anchor": "bottom-center", "sha256": "c5651c8be879c3f89086f0ab0dd8ee5cf72770b6afc42f593f877ac6b9d67f11"},
+    {"file": "char_neighbor_storyteller_walk.png", "width": 128, "height": 192, "scope": "runtime", "anchor": "bottom-center", "sha256": "0d2268c1f17fcd322e590027c10444e5f4ac408cb4f5153b1e053ebdbc98542d"},
+    {"file": "char_neighbor_evidence.png", "width": 32, "height": 48, "scope": "runtime", "anchor": "bottom-center", "sha256": "a533d23d6fc8db9ca5d4fc59ceb6fa1b278854efa1f12f4a4b5f32ed6612eaa3"},
+    {"file": "char_neighbor_evidence_walk.png", "width": 128, "height": 192, "scope": "runtime", "anchor": "bottom-center", "sha256": "b8200cbe8bf301a5d74b87aa094b6074dff146d9bba99170c73b86bc31e7f10f"},
+    {"file": "char_neighbor_consensus.png", "width": 32, "height": 48, "scope": "runtime", "anchor": "bottom-center", "sha256": "96b9a4df3e32db1e533c8b6abb9f217ab9042640022669d8c4acfa692a4c0b35"},
+    {"file": "char_neighbor_consensus_walk.png", "width": 128, "height": 192, "scope": "runtime", "anchor": "bottom-center", "sha256": "df9ef76ce4c19a60b09686a608eb74b485b7085e8b3e5515cd017c62f5ad0b2f"}
+  ]
+}

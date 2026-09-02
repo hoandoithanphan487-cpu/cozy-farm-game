@@ -1,7 +1,10 @@
 import Foundation
 
 enum SaveMigrator {
-    static func migrate(_ data: Data) throws -> SaveGameDTO {
+    static func migrate(
+        _ data: Data,
+        context: SaveMigrationContext = .unspecified
+    ) throws -> SaveGameDTO {
         let jsonObject = try JSONSerialization.jsonObject(with: data)
         guard var json = jsonObject as? [String: Any] else {
             throw SaveStoreError.invalidContents
@@ -9,7 +12,7 @@ enum SaveMigrator {
         let version = try schemaVersion(from: json)
         var from = version
         while from < SaveSchema.currentVersion {
-            json = try migrateOnce(from: from, json: json)
+            json = try migrateOnce(from: from, json: json, originalData: data, context: context)
             from += 1
         }
         json["schema_version"] = SaveSchema.currentVersion
@@ -17,7 +20,12 @@ enum SaveMigrator {
         return try JSONDecoder().decode(SaveGameDTO.self, from: migrated)
     }
 
-    private static func migrateOnce(from version: Int, json: [String: Any]) throws -> [String: Any] {
+    private static func migrateOnce(
+        from version: Int,
+        json: [String: Any],
+        originalData: Data,
+        context: SaveMigrationContext
+    ) throws -> [String: Any] {
         switch version {
         case 0:
             return try migrateV0ToV1(json)
@@ -35,6 +43,10 @@ enum SaveMigrator {
             return try migrateV6ToV7(json)
         case 7:
             return try migrateV7ToV8(json)
+        case 8:
+            return try migrateV8ToV9(json)
+        case 9:
+            return try migrateV9ToV10(json, originalData: originalData, context: context)
         default:
             throw SaveStoreError.unsupportedSchema
         }
@@ -179,6 +191,59 @@ enum SaveMigrator {
         return next
     }
 
+    /// N-022 v8 saves have no livestock roster or cat-shop transaction state.
+    /// Every legacy save receives the same small starter herd; no currency is
+    /// granted and the cat-shop receipt history starts empty.
+    private static func migrateV8ToV9(_ json: [String: Any]) throws -> [String: Any] {
+        var next = json
+        let day = try clockDay(from: json)
+        if next["livestock"] == nil {
+            next["livestock"] = try encodableJSONObject(
+                LivestockCatalog.starterHerd(startDay: day)
+            )
+        }
+        if next["cat_shop"] == nil {
+            next["cat_shop"] = try encodableJSONObject(CatShopState.empty)
+        }
+        next["schema_version"] = 9
+        return next
+    }
+
+    /// N-027 v9 saves have no campaign ownership, story history, or crop-care
+    /// pressure. Migration is intentionally neutral: it never infers story
+    /// progress from inventory, receipts, relationships, or current crops.
+    private static func migrateV9ToV10(
+        _ json: [String: Any],
+        originalData: Data,
+        context: SaveMigrationContext
+    ) throws -> [String: Any] {
+        var next = json
+        let campaignID = CampaignIdentity.legacy(data: originalData, context: context)
+        next["campaign_id"] = campaignID
+        next["generation_metadata"] = try encodableJSONObject(
+            SaveGenerationMetadata.neutral(
+                campaignID: campaignID,
+                sourceSlotName: context.sourceSlotName
+            )
+        )
+        next["story_campaign"] = try encodableJSONObject(StoryCampaignState.newGame)
+        next["story_metrics"] = try encodableJSONObject(StoryMetricsState.empty)
+        if var records = next["farmCells"] as? [[String: Any]] {
+            for index in records.indices {
+                records[index]["dryStreak"] = 0
+                records[index]["cropCondition"] = CropCondition.healthy.rawValue
+            }
+            next["farmCells"] = records
+        }
+        next["schema_version"] = 10
+        return next
+    }
+
+    private static func encodableJSONObject<T: Encodable>(_ value: T) throws -> Any {
+        let data = try JSONEncoder().encode(value)
+        return try JSONSerialization.jsonObject(with: data)
+    }
+
     private static func defaultSettingsJSON() -> [String: Any] {
         let defaults = SettingsState.defaults
         let encoder = JSONEncoder()
@@ -263,13 +328,80 @@ enum SaveMigrator {
 }
 
 enum SaveCodec {
-    static func encode(_ state: GameState) throws -> Data {
+    static func encode(
+        _ state: GameState,
+        generationMetadata: SaveGenerationMetadata? = nil
+    ) throws -> Data {
         let encoder = JSONEncoder()
         encoder.outputFormatting = [.sortedKeys, .prettyPrinted]
-        return try encoder.encode(SaveGameDTO(state: state))
+        return try encoder.encode(
+            SaveGameDTO(state: state, generationMetadata: generationMetadata)
+        )
     }
 
-    static func decode(_ data: Data) throws -> GameState {
-        try SaveMigrator.migrate(data).makeState()
+    static func decode(
+        _ data: Data,
+        catalog: ContentCatalog = .vs0,
+        context: SaveMigrationContext = .unspecified
+    ) throws -> GameState {
+        try decodeGeneration(data, catalog: catalog, context: context).state
+    }
+
+    static func decodeGeneration(
+        _ data: Data,
+        catalog: ContentCatalog = .vs0,
+        context: SaveMigrationContext = .unspecified
+    ) throws -> SaveGeneration {
+        let dto = try SaveMigrator.migrate(data, context: context)
+        var state = try dto.makeState()
+        try SavePositionRelocator.relocateIfNeeded(state: &state, catalog: catalog)
+        return SaveGeneration(state: state, metadata: dto.generationMetadata)
+    }
+}
+
+/// N-015 keeps schema v8 and repairs only the decoded world position. The
+/// ordering is deliberately stable so the same legacy save always chooses the
+/// same nearest safe cell: Manhattan distance, then y, then x.
+enum SavePositionRelocator {
+    static func relocateIfNeeded(state: inout GameState, catalog: ContentCatalog) throws {
+        guard let map = catalog.map(id: state.currentMapID) else {
+            throw SaveStoreError.invalidContents
+        }
+        let occupiedByNPC = npcOccupiedCells(mapID: map.id, catalog: catalog)
+        if isSafe(state.position, in: map, occupiedByNPC: occupiedByNPC) {
+            return
+        }
+
+        let origin = state.position
+        let candidates = (0..<map.rows).flatMap { row in
+            (0..<map.columns).map { column in GridPosition(x: column, y: row) }
+        }.filter { isSafe($0, in: map, occupiedByNPC: occupiedByNPC) }
+        guard let nearest = candidates.min(by: { lhs, rhs in
+            let leftDistance = abs(lhs.x - origin.x) + abs(lhs.y - origin.y)
+            let rightDistance = abs(rhs.x - origin.x) + abs(rhs.y - origin.y)
+            if leftDistance != rightDistance { return leftDistance < rightDistance }
+            if lhs.y != rhs.y { return lhs.y < rhs.y }
+            return lhs.x < rhs.x
+        }) else {
+            throw SaveStoreError.invalidContents
+        }
+        state.position = nearest
+    }
+
+    private static func isSafe(
+        _ position: GridPosition,
+        in map: MapDefinition,
+        occupiedByNPC: Set<GridPosition>
+    ) -> Bool {
+        map.contains(position)
+            && !map.isBlocked(position)
+            && !occupiedByNPC.contains(position)
+    }
+
+    private static func npcOccupiedCells(mapID: String, catalog: ContentCatalog) -> Set<GridPosition> {
+        if mapID == ContentID.farmHomestead {
+            return Set(catalog.scenario.startingNpcSpawns.map(\.position))
+        }
+        return Set(WorldCatalog.npcList.filter { $0.mapID == mapID }.map(\.position))
     }
 }

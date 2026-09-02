@@ -74,6 +74,9 @@ final class ShippingServiceTests: XCTestCase {
             quantity: 3,
             catalog: catalog
         ).get()
+        // This fixture models one occupied slot. New-game content may grant
+        // additional starter stacks, which are unrelated to retrieval capacity.
+        state.inventory = [InventoryQuantity(itemID: ContentID.mistRadishSeed, quantity: 1)]
         state.inventoryCapacity = 1
         XCTAssertEqual(state.inventory.count, 1)
         let before = state

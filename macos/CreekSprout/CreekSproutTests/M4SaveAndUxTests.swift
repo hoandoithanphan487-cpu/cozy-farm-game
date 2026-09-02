@@ -131,7 +131,7 @@ final class M4SaveAndUxTests: XCTestCase {
     func testSteppingOnExitDoesNotTravel() {
         var state = GameState.vs0NewGame(catalog: catalog)
         state.currentMapID = ContentID.farmHomestead
-        state.position = GridPosition(x: 5, y: 0)
+        state.position = GridPosition(x: 7, y: 0)
         state.facing = .down
         let beforeMap = state.currentMapID
         _ = MapTravelService.tryMove(state: &state, direction: .up, catalog: catalog)
@@ -141,7 +141,7 @@ final class M4SaveAndUxTests: XCTestCase {
     func testFacingExitAndInteractTravels() {
         var state = GameState.vs0NewGame(catalog: catalog)
         state.currentMapID = ContentID.farmHomestead
-        state.position = GridPosition(x: 5, y: 0)
+        state.position = GridPosition(x: 7, y: 0)
         state.facing = .up
         let result = MapTravelService.interactWithExit(state: &state, catalog: catalog)
         XCTAssertTrue(result?.didTravel == true)

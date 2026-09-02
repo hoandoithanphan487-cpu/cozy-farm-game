@@ -7,11 +7,14 @@ final class WatershedProgressionTests: XCTestCase {
 
     func testZeroTwelveTwentyPathIsObservableAndIdempotent() {
         var state = GameState.vs0NewGame(catalog: catalog)
+        let restoredBrookCell = ProgressionCatalog.gatherNodeList.first {
+            $0.id == ContentID.restoredBrookGather
+        }!.position
         XCTAssertEqual(state.watershed.restorationPoints, 0)
         XCTAssertEqual(state.watershed.ambienceLabel, "干涸层")
         XCTAssertFalse(catalog.isRecipeUnlocked(ContentID.rainBarrelRecipe, watershed: state.watershed))
         XCTAssertNil(
-            catalog.gatherNode(at: GridPosition(x: 8, y: 1), mapID: ContentID.creekMarket, state: state)
+            catalog.gatherNode(at: restoredBrookCell, mapID: ContentID.creekMarket, state: state)
         )
 
         XCTAssertTrue(placeCanal(&state))
@@ -31,7 +34,7 @@ final class WatershedProgressionTests: XCTestCase {
         XCTAssertEqual(state.watershed.ambienceLayerID, ContentID.flowingWaterAmbience)
         XCTAssertTrue(catalog.isRecipeUnlocked(ContentID.rainBarrelRecipe, watershed: state.watershed))
         XCTAssertNotNil(
-            catalog.gatherNode(at: GridPosition(x: 8, y: 1), mapID: ContentID.creekMarket, state: state)
+            catalog.gatherNode(at: restoredBrookCell, mapID: ContentID.creekMarket, state: state)
         )
         XCTAssertEqual(
             WorldVariant.landmarkLabel(
@@ -142,7 +145,7 @@ final class WatershedProgressionTests: XCTestCase {
         let blocked = commands.place(
             state: &conflict,
             definitionID: ContentID.canalSegmentObject,
-            origin: GridPosition(x: 4, y: 1),
+            origin: GridPosition(x: 4, y: 3),
             facing: .up
         )
         XCTAssertFalse(blocked.isSuccess)

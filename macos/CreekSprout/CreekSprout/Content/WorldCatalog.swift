@@ -43,36 +43,86 @@ enum WorldCatalog {
         neighborConsensusDialogue,
     ]
 
+    private static func cells(x: ClosedRange<Int>, y: ClosedRange<Int>) -> Set<GridPosition> {
+        Set(x.flatMap { column in y.map { row in GridPosition(x: column, y: row) } })
+    }
+
+    private static func buildingLayers(prefix: String, width: Int, height: Int) -> [MapBuildingLayerDefinition] {
+        ["base", "structure", "roof", "detail", "interaction", "state_fx"].enumerated().map { order, semantic in
+            MapBuildingLayerDefinition(
+                filename: "\(prefix)_\(semantic).png",
+                nativeWidth: width,
+                nativeHeight: height,
+                order: order,
+                semantic: semantic
+            )
+        }
+    }
+
     static let farmHomestead = MapDefinition(
         id: ContentID.farmHomestead,
         nameKey: "map.farm_homestead",
         displayName: "农场与农舍",
-        columns: GridPosition.columnCount,
-        rows: GridPosition.rowCount,
-        blockedCells: [
-            GridPosition(x: 0, y: 4),
-            GridPosition(x: 1, y: 4),
-            GridPosition(x: 0, y: 5),
-            GridPosition(x: 1, y: 5),
-            GridPosition(x: 8, y: 5),
-            GridPosition(x: 9, y: 5),
-        ],
+        columns: 16,
+        rows: 15,
+        blockedCells: [],
         landmarks: [
-            MapLandmarkDefinition(id: "brookseed.landmark.farm_house", label: "木构农舍", position: GridPosition(x: 0, y: 5)),
-            MapLandmarkDefinition(id: "brookseed.landmark.farm_beds", label: "湿土苗床", position: GridPosition(x: 5, y: 1)),
-            MapLandmarkDefinition(id: "brookseed.landmark.farm_sluice", label: "铜闸工位", position: GridPosition(x: 9, y: 5)),
-            MapLandmarkDefinition(id: "brookseed.landmark.farm_steps", label: "石阶溪口", position: GridPosition(x: 5, y: 0)),
+            MapLandmarkDefinition(id: "brookseed.landmark.farm_house", label: "木构农舍", position: GridPosition(x: 3, y: 8)),
+            MapLandmarkDefinition(id: "brookseed.landmark.farm_beds", label: "围栏农田", position: GridPosition(x: 3, y: 4)),
+            MapLandmarkDefinition(id: "brookseed.landmark.farm_sluice", label: "铜闸工位", position: GridPosition(x: 12, y: 8)),
+            MapLandmarkDefinition(id: "brookseed.landmark.farm_steps", label: "石阶溪口", position: GridPosition(x: 7, y: 0)),
         ],
         spawns: [
-            MapSpawnDefinition(id: ContentID.farmWakeSpawn, position: GridPosition(x: 5, y: 4)),
-            MapSpawnDefinition(id: ContentID.farmFromMarketSpawn, position: GridPosition(x: 5, y: 2)),
+            MapSpawnDefinition(id: ContentID.farmFromMarketSpawn, position: GridPosition(x: 7, y: 1)),
+            MapSpawnDefinition(id: ContentID.farmWakeSpawn, position: GridPosition(x: 7, y: 6)),
         ],
         exits: [
             MapExitDefinition(
                 id: ContentID.farmToMarketExit,
-                cell: GridPosition(x: 5, y: 0),
+                cell: GridPosition(x: 7, y: 0),
                 destinationMapID: ContentID.creekMarket,
                 destinationSpawnID: ContentID.marketFromFarmSpawn
+            ),
+        ],
+        environmentBoundaryCells: cells(x: 0...15, y: 12...14)
+            .subtracting(FarmCultivationCatalog.rearCultivableCells),
+        waterCells: [
+            MapWaterCellDefinition(cell: GridPosition(x: 12, y: 0), semantic: .cornerSW),
+            MapWaterCellDefinition(cell: GridPosition(x: 12, y: 1), semantic: .cornerNW),
+            MapWaterCellDefinition(cell: GridPosition(x: 13, y: 0), semantic: .edgeS),
+            MapWaterCellDefinition(cell: GridPosition(x: 13, y: 1), semantic: .edgeN),
+            MapWaterCellDefinition(cell: GridPosition(x: 14, y: 0), semantic: .cornerSE),
+            MapWaterCellDefinition(cell: GridPosition(x: 14, y: 1), semantic: .cornerNE),
+        ],
+        canalCells: (2...7).map {
+            MapCanalCellDefinition(cell: GridPosition(x: 13, y: $0), isNorthSouth: true)
+        },
+        pathCells: Set((3...12).map { GridPosition(x: $0, y: 7) }
+            + (0...6).map { GridPosition(x: 7, y: $0) }),
+        buildings: [
+            MapBuildingDefinition(
+                id: "brookseed.landmark.farm_house",
+                footprint: cells(x: 1...5, y: 8...11),
+                collisionCells: cells(x: 1...5, y: 8...11).subtracting([GridPosition(x: 3, y: 8)]),
+                door: GridPosition(x: 3, y: 8),
+                interactionCells: [GridPosition(x: 3, y: 7)],
+                occlusionCells: Set((1...5).map { GridPosition(x: $0, y: 8) }),
+                renderAnchor: GridPosition(x: 3, y: 8),
+                renderOffsetX: 0,
+                renderOffsetY: -12,
+                layers: buildingLayers(prefix: "building_farm_house", width: 144, height: 144)
+            ),
+            MapBuildingDefinition(
+                id: "brookseed.landmark.farm_sluice",
+                footprint: cells(x: 10...14, y: 8...11),
+                collisionCells: cells(x: 10...14, y: 8...11).subtracting([GridPosition(x: 12, y: 8)]),
+                door: GridPosition(x: 12, y: 8),
+                interactionCells: [GridPosition(x: 12, y: 7)],
+                occlusionCells: Set((10...14).map { GridPosition(x: $0, y: 8) }),
+                renderAnchor: GridPosition(x: 12, y: 8),
+                renderOffsetX: -12,
+                renderOffsetY: -12,
+                layers: buildingLayers(prefix: "building_farm_sluice", width: 192, height: 168)
             ),
         ]
     )
@@ -81,37 +131,90 @@ enum WorldCatalog {
         id: ContentID.creekMarket,
         nameKey: "map.creek_market",
         displayName: "溪岸集市",
-        columns: 10,
-        rows: 8,
-        blockedCells: [
-            GridPosition(x: 0, y: 0),
-            GridPosition(x: 1, y: 0),
-            GridPosition(x: 8, y: 0),
-            GridPosition(x: 9, y: 0),
-            GridPosition(x: 0, y: 6),
-            GridPosition(x: 0, y: 7),
-            GridPosition(x: 1, y: 7),
-            GridPosition(x: 8, y: 7),
-            GridPosition(x: 9, y: 6),
-            GridPosition(x: 9, y: 7),
-        ],
+        columns: 18,
+        rows: 14,
+        blockedCells: [],
         landmarks: [
-            MapLandmarkDefinition(id: "brookseed.landmark.market_wharf", label: "苔石埠头", position: GridPosition(x: 0, y: 0)),
-            MapLandmarkDefinition(id: "brookseed.landmark.market_seed_shed", label: "种源棚", position: GridPosition(x: 0, y: 7)),
-            MapLandmarkDefinition(id: "brookseed.landmark.market_warden_post", label: "巡护亭", position: GridPosition(x: 9, y: 7)),
-            MapLandmarkDefinition(id: "brookseed.landmark.market_table", label: "邻里石桌", position: GridPosition(x: 5, y: 4)),
-            MapLandmarkDefinition(id: "brookseed.landmark.market_blocked_mouth", label: "阻塞水口", position: GridPosition(x: 9, y: 0)),
-            MapLandmarkDefinition(id: "brookseed.landmark.market_steps", label: "回农场石阶", position: GridPosition(x: 5, y: 0)),
+            MapLandmarkDefinition(id: "brookseed.landmark.market_wharf", label: "苔石埠头", position: GridPosition(x: 3, y: 4)),
+            MapLandmarkDefinition(id: "brookseed.landmark.market_seed_shed", label: "种源棚", position: GridPosition(x: 1, y: 9)),
+            MapLandmarkDefinition(id: "brookseed.landmark.market_warden_post", label: "巡护亭", position: GridPosition(x: 16, y: 9)),
+            MapLandmarkDefinition(id: "brookseed.landmark.market_table", label: "邻里石桌", position: GridPosition(x: 6, y: 7)),
+            MapLandmarkDefinition(id: "brookseed.landmark.market_blocked_mouth", label: "阻塞水口", position: GridPosition(x: 16, y: 2)),
+            MapLandmarkDefinition(id: "brookseed.landmark.market_steps", label: "回农场石阶", position: GridPosition(x: 9, y: 12)),
         ],
         spawns: [
-            MapSpawnDefinition(id: ContentID.marketFromFarmSpawn, position: GridPosition(x: 5, y: 1)),
+            MapSpawnDefinition(id: ContentID.marketFromFarmSpawn, position: GridPosition(x: 9, y: 11)),
         ],
         exits: [
             MapExitDefinition(
                 id: ContentID.marketToFarmExit,
-                cell: GridPosition(x: 5, y: 0),
+                cell: GridPosition(x: 9, y: 12),
                 destinationMapID: ContentID.farmHomestead,
                 destinationSpawnID: ContentID.farmFromMarketSpawn
+            ),
+        ],
+        environmentBoundaryCells: Set((3...13).flatMap {
+            [GridPosition(x: 0, y: $0), GridPosition(x: 17, y: $0)]
+        } + (1...16).map { GridPosition(x: $0, y: 13) }),
+        staticObstacleCells: [GridPosition(x: 6, y: 7)],
+        waterCells: (0...17).flatMap { column in
+            (0...2).map { row in
+                let semantic: MapWaterSemantic
+                if column == 0 && row == 0 { semantic = .cornerSW }
+                else if column == 0 && row == 2 { semantic = .cornerNW }
+                else if column == 17 && row == 0 { semantic = .cornerSE }
+                else if column == 17 && row == 2 { semantic = .cornerNE }
+                else if column == 0 { semantic = .edgeW }
+                else if column == 17 { semantic = .edgeE }
+                else if row == 0 { semantic = .edgeS }
+                else if row == 2 { semantic = .edgeN }
+                else { semantic = .base }
+                return MapWaterCellDefinition(cell: GridPosition(x: column, y: row), semantic: semantic)
+            }
+        },
+        pathCells: Set(
+            (1...16).map { GridPosition(x: $0, y: 8) }
+            + (3...12).flatMap { [GridPosition(x: 8, y: $0), GridPosition(x: 9, y: $0)] }
+            + (2...15).map { GridPosition(x: $0, y: 5) }
+            + (6...7).map { GridPosition(x: 2, y: $0) }
+            + (6...7).map { GridPosition(x: 15, y: $0) }
+        ),
+        buildings: [
+            MapBuildingDefinition(
+                id: "brookseed.landmark.market_wharf",
+                footprint: cells(x: 1...5, y: 3...4),
+                collisionCells: cells(x: 1...5, y: 3...4).subtracting([GridPosition(x: 3, y: 4)]),
+                door: GridPosition(x: 3, y: 4),
+                interactionCells: [GridPosition(x: 3, y: 5)],
+                occlusionCells: Set((1...5).map { GridPosition(x: $0, y: 4) }),
+                renderAnchor: GridPosition(x: 3, y: 3),
+                renderOffsetX: 0,
+                renderOffsetY: -12,
+                layers: buildingLayers(prefix: "building_market_wharf", width: 144, height: 96)
+            ),
+            MapBuildingDefinition(
+                id: "brookseed.landmark.market_seed_shed",
+                footprint: cells(x: 1...3, y: 9...10),
+                collisionCells: cells(x: 1...3, y: 9...10).subtracting([GridPosition(x: 1, y: 9)]),
+                door: GridPosition(x: 1, y: 9),
+                interactionCells: [GridPosition(x: 1, y: 8)],
+                occlusionCells: Set((1...3).map { GridPosition(x: $0, y: 9) }),
+                renderAnchor: GridPosition(x: 2, y: 9),
+                renderOffsetX: 0,
+                renderOffsetY: -12,
+                layers: buildingLayers(prefix: "building_market_seed_shed", width: 96, height: 96)
+            ),
+            MapBuildingDefinition(
+                id: "brookseed.landmark.market_warden_post",
+                footprint: cells(x: 14...16, y: 9...10),
+                collisionCells: cells(x: 14...16, y: 9...10).subtracting([GridPosition(x: 16, y: 9)]),
+                door: GridPosition(x: 16, y: 9),
+                interactionCells: [GridPosition(x: 16, y: 8)],
+                occlusionCells: Set((14...16).map { GridPosition(x: $0, y: 9) }),
+                renderAnchor: GridPosition(x: 15, y: 9),
+                renderOffsetX: 0,
+                renderOffsetY: -12,
+                layers: buildingLayers(prefix: "building_market_warden_post", width: 96, height: 96)
             ),
         ]
     )
@@ -124,7 +227,7 @@ enum WorldCatalog {
         personalityArchetype: nil,
         dialoguePoolID: ContentID.waterApprenticeMarketDialogue,
         mapID: ContentID.creekMarket,
-        position: GridPosition(x: 1, y: 3)
+        position: GridPosition(x: 3, y: 6)
     )
 
     static let seedSteward = NpcDefinition(
@@ -135,7 +238,7 @@ enum WorldCatalog {
         personalityArchetype: nil,
         dialoguePoolID: ContentID.seedStewardDialogue,
         mapID: ContentID.creekMarket,
-        position: GridPosition(x: 8, y: 3)
+        position: GridPosition(x: 4, y: 9)
     )
 
     static let creekWarden = NpcDefinition(
@@ -146,7 +249,7 @@ enum WorldCatalog {
         personalityArchetype: nil,
         dialoguePoolID: ContentID.creekWardenDialogue,
         mapID: ContentID.creekMarket,
-        position: GridPosition(x: 7, y: 6)
+        position: GridPosition(x: 13, y: 9)
     )
 
     static let neighborHearsay = NpcDefinition(
@@ -157,7 +260,7 @@ enum WorldCatalog {
         personalityArchetype: .helpfulHearsay,
         dialoguePoolID: ContentID.neighborHearsayDialogue,
         mapID: ContentID.creekMarket,
-        position: GridPosition(x: 2, y: 6)
+        position: GridPosition(x: 5, y: 7)
     )
 
     static let neighborStoryteller = NpcDefinition(
@@ -168,7 +271,7 @@ enum WorldCatalog {
         personalityArchetype: .dramaticStoryteller,
         dialoguePoolID: ContentID.neighborStorytellerDialogue,
         mapID: ContentID.creekMarket,
-        position: GridPosition(x: 3, y: 4)
+        position: GridPosition(x: 7, y: 6)
     )
 
     static let neighborEvidence = NpcDefinition(
@@ -179,7 +282,7 @@ enum WorldCatalog {
         personalityArchetype: .evidenceMinded,
         dialoguePoolID: ContentID.neighborEvidenceDialogue,
         mapID: ContentID.creekMarket,
-        position: GridPosition(x: 6, y: 4)
+        position: GridPosition(x: 11, y: 6)
     )
 
     static let neighborConsensus = NpcDefinition(
@@ -190,7 +293,7 @@ enum WorldCatalog {
         personalityArchetype: .consensusFollower,
         dialoguePoolID: ContentID.neighborConsensusDialogue,
         mapID: ContentID.creekMarket,
-        position: GridPosition(x: 2, y: 2)
+        position: GridPosition(x: 7, y: 11)
     )
 
     static let waterApprenticeMarket = DialogueDefinition(

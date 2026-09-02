@@ -15,7 +15,9 @@ enum ContentValidator {
             scenario: catalog.scenario
         )
         try validateProgression(catalog)
+        try validateProcessing(catalog)
         try validateCommunity(catalog)
+        try StoryContentValidator.validate(.shared, worldMaps: catalog.maps)
     }
 
     static func validate(
@@ -292,6 +294,57 @@ enum ContentValidator {
         }
         guard catalog.gatherNode(id: ContentID.restoredBrookGather)?.requiredUnlockID != nil else {
             throw ContentValidationError(reason: "新采集点必须有解锁条件")
+        }
+    }
+
+    static func validateProcessing(_ catalog: ContentCatalog) throws {
+        let processing = catalog.recipes.values.filter(\.isProcessingRecipe)
+        guard processing.count >= 3 else {
+            throw ContentValidationError(reason: "加工配方不足 3 条")
+        }
+        for recipe in processing {
+            guard let stationID = recipe.requiredPlacedObjectID,
+                  catalog.knowsPlacedObjectID(stationID) else {
+                throw ContentValidationError(reason: "加工配方缺少放置物：\(recipe.id)")
+            }
+            guard recipe.placedObjectID == nil else {
+                throw ContentValidationError(reason: "加工配方不得产出放置物：\(recipe.id)")
+            }
+            guard recipe.staminaCost == ContentID.processingStaminaCost else {
+                throw ContentValidationError(reason: "加工配方体力必须为 2：\(recipe.id)")
+            }
+            guard recipe.inputs.count == 1, recipe.outputs.count == 1 else {
+                throw ContentValidationError(reason: "加工配方必须 1 进 1 出：\(recipe.id)")
+            }
+            let input = recipe.inputs[0]
+            let output = recipe.outputs[0]
+            guard input.itemID != ContentID.mistRadishItem,
+                  input.itemID != ContentID.mistRadishSeed else {
+                throw ContentValidationError(reason: "加工配方不得使用雾萝卜：\(recipe.id)")
+            }
+            guard catalog.knowsItemID(input.itemID), catalog.knowsItemID(output.itemID) else {
+                throw ContentValidationError(reason: "加工配方引用缺失物品：\(recipe.id)")
+            }
+            guard let inputPrice = catalog.item(id: input.itemID)?.baseSellPrice, inputPrice > 0,
+                  let outputPrice = catalog.item(id: output.itemID)?.baseSellPrice, outputPrice > 0 else {
+                throw ContentValidationError(reason: "加工成品必须可售：\(recipe.id)")
+            }
+            let minPrice = (inputPrice * ContentID.processingMarkupMinBp + 99) / 100
+            let maxPrice = (inputPrice * ContentID.processingMarkupMaxBp) / 100
+            guard (minPrice...maxPrice).contains(outputPrice) else {
+                throw ContentValidationError(reason: "加工成品定价超出 +30%~+40%：\(recipe.id)")
+            }
+            guard EconomyCatalog(content: catalog).isShippable(itemID: output.itemID) else {
+                throw ContentValidationError(reason: "加工成品不可投入出售箱：\(recipe.id)")
+            }
+        }
+        guard catalog.knowsPlacedObjectID(ContentID.woodhoneyHearthObject),
+              catalog.knowsItemID(ContentID.woodhoneyHearthItem),
+              catalog.recipe(id: ContentID.woodhoneyHearthRecipe) != nil else {
+            throw ContentValidationError(reason: "缺失木蜜灶台放置物或配方")
+        }
+        guard catalog.placedObject(id: ContentID.woodhoneyHearthObject)?.category == "processing" else {
+            throw ContentValidationError(reason: "木蜜灶台类别必须为 processing")
         }
     }
 

@@ -3,6 +3,27 @@ enum ContentID {
     static let mistRadishSeed = "brookseed.item.mist_radish_seed"
     static let mistRadishItem = "brookseed.item.mist_radish"
 
+    // MARK: - N-015 farmable crop expansion (DEC-033)
+
+    static let streamLeafCrop = "brookseed.crop.stream_leaf"
+    static let streamLeafSeed = "brookseed.item.stream_leaf_seed"
+    static let amberBeanCrop = "brookseed.crop.amber_bean"
+    static let amberBeanSeed = "brookseed.item.amber_bean_seed"
+    static let bellBerryCrop = "brookseed.crop.bell_berry"
+    static let bellBerrySeed = "brookseed.item.bell_berry_seed"
+    static let honeyMelonCrop = "brookseed.crop.honey_melon"
+    static let honeyMelonSeed = "brookseed.item.honey_melon_seed"
+
+    /// Stable toolbelt order. Repeatedly selecting the seed tool cycles only
+    /// through entries the player currently owns.
+    static let farmSeedItemIDs: [String] = [
+        mistRadishSeed,
+        streamLeafSeed,
+        amberBeanSeed,
+        bellBerrySeed,
+        honeyMelonSeed,
+    ]
+
     static let vs0Scenario = "brookseed.scenario.vs1"
 
     static let creekWood = "brookseed.item.creek_wood"
@@ -19,6 +40,38 @@ enum ContentID {
     static let compostRackRecipe = "brookseed.recipe.compost_rack"
     static let canalSegmentRecipe = "brookseed.recipe.canal_segment"
     static let rainBarrelRecipe = "brookseed.recipe.rain_barrel"
+
+    // MARK: - N-004 lightweight processing (IDEA-001 form 1)
+
+    static let creekGreensItem = "brookseed.item.creek_greens"
+    static let amberBeanItem = "brookseed.item.amber_bean"
+    static let bellBerryItem = "brookseed.item.bell_berry"
+    static let honeyMelonItem = "brookseed.item.honey_melon"
+
+    static let honeySearedCreekGreensItem = "brookseed.item.honey_seared_creek_greens"
+    static let honeySearedAmberBeanItem = "brookseed.item.honey_seared_amber_bean"
+    static let honeyPreservedBellBerryItem = "brookseed.item.honey_preserved_bell_berry"
+    static let honeySearedHoneyMelonItem = "brookseed.item.honey_seared_honey_melon"
+
+    static let woodhoneyHearthItem = "brookseed.item.woodhoney_hearth"
+    static let woodhoneyHearthObject = "brookseed.placed.woodhoney_hearth"
+    static let woodhoneyHearthRecipe = "brookseed.recipe.woodhoney_hearth"
+
+    static let honeySearedCreekGreensRecipe = "brookseed.recipe.honey_seared_creek_greens"
+    static let honeySearedAmberBeanRecipe = "brookseed.recipe.honey_seared_amber_bean"
+    static let honeyPreservedBellBerryRecipe = "brookseed.recipe.honey_preserved_bell_berry"
+    static let honeySearedHoneyMelonRecipe = "brookseed.recipe.honey_seared_honey_melon"
+
+    static let processingStaminaCost = 2
+    static let processingMarkupMinBp = 130
+    static let processingMarkupMaxBp = 140
+
+    static let processingRecipeIDs: [String] = [
+        honeySearedCreekGreensRecipe,
+        honeySearedAmberBeanRecipe,
+        honeyPreservedBellBerryRecipe,
+        honeySearedHoneyMelonRecipe,
+    ]
 
     static let woodenCrateObject = "brookseed.placed.wooden_crate"
     static let stonePathObject = "brookseed.placed.stone_path"
@@ -79,6 +132,26 @@ enum ContentID {
     static let migrationGrantReason = "migration.grant"
     static let shippingSettleReason = "shipping.settle"
     static let debugGrantReason = "debug.grant"
+
+    // MARK: - N-022 livestock and cat-shop supply
+
+    static let livestockCow = "brookseed.livestock.cow"
+    static let livestockSheep = "brookseed.livestock.sheep"
+    static let livestockGoat = "brookseed.livestock.goat"
+
+    static let starterCow = "brookseed.animal.starter_cow"
+    static let starterSheep = "brookseed.animal.starter_sheep"
+    static let starterGoat = "brookseed.animal.starter_goat"
+
+    static let catShopSupplyReason = "cat_shop.supply"
+    static let catShopCropOfferPrefix = "brookseed.catshop.offer.crop"
+    static let catShopAnimalOfferPrefix = "brookseed.catshop.offer.animal"
+
+    static let livestockDefinitionIDs: [String] = [
+        livestockCow,
+        livestockSheep,
+        livestockGoat,
+    ]
 
     static let farmHomestead = "brookseed.map.farm_homestead"
     static let creekMarket = "brookseed.map.creek_market"
@@ -181,7 +254,7 @@ enum ContentID {
         tutorialNextDay,
     ]
 
-    static func isValid(_ value: String) -> Bool {
+    nonisolated static func isValid(_ value: String) -> Bool {
         guard !value.isEmpty, value.count <= 120 else {
             return false
         }
@@ -194,7 +267,7 @@ enum ContentID {
         }
     }
 
-    private static func isIdentifier(_ segment: Substring) -> Bool {
+    nonisolated private static func isIdentifier(_ segment: Substring) -> Bool {
         guard let first = segment.first, first.isLetter || first == "_" else {
             return false
         }

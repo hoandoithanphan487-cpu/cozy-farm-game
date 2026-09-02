@@ -15,15 +15,21 @@ struct SaveStore: Sendable {
     let directory: URL
     let slotName: String
     let catalog: ContentCatalog
+    let generationMetadata: SaveGenerationMetadata?
+    let expectation: SaveGenerationExpectation?
 
     init(
         directory: URL,
         slotName: String = "slot_0",
-        catalog: ContentCatalog = .vs0
+        catalog: ContentCatalog = .vs0,
+        generationMetadata: SaveGenerationMetadata? = nil,
+        expectation: SaveGenerationExpectation? = nil
     ) {
         self.directory = directory
         self.slotName = slotName
         self.catalog = catalog
+        self.generationMetadata = generationMetadata
+        self.expectation = expectation
     }
 
     var primaryURL: URL {
@@ -40,6 +46,11 @@ struct SaveStore: Sendable {
 
     func save(_ state: GameState) throws {
         try SaveValidation.validate(state, catalog: catalog)
+        let metadata = generationMetadata ?? .neutral(
+            campaignID: state.campaignID,
+            sourceSlotName: slotName
+        )
+        try validate(metadata: metadata, for: state)
 
         let fileManager = FileManager.default
         do {
@@ -48,11 +59,13 @@ struct SaveStore: Sendable {
             throw SaveStoreError.cannotCreateDirectory
         }
 
-        let payload = try SaveCodec.encode(state)
+        let payload = try SaveCodec.encode(state, generationMetadata: metadata)
         try payload.write(to: temporaryURL, options: .atomic)
 
         let readBack = try Data(contentsOf: temporaryURL)
-        guard let verified = try? decodeValid(readBack), verified == state else {
+        guard let verified = try? decodeValid(readBack),
+              verified.state == state,
+              verified.metadata == metadata else {
             try? fileManager.removeItem(at: temporaryURL)
             throw SaveStoreError.temporaryVerificationFailed
         }
@@ -82,27 +95,51 @@ struct SaveStore: Sendable {
     }
 
     func load() throws -> GameState {
+        try loadGeneration().state
+    }
+
+    func loadGeneration() throws -> SaveGeneration {
         let fileManager = FileManager.default
-        guard fileManager.fileExists(atPath: primaryURL.path) else {
+        let hasPrimary = fileManager.fileExists(atPath: primaryURL.path)
+        let hasBackup = fileManager.fileExists(atPath: backupURL.path)
+        guard hasPrimary || hasBackup else {
             throw SaveStoreError.missingSave
         }
 
-        if let data = try? Data(contentsOf: primaryURL), let state = try? decodeValid(data) {
-            return state
+        if hasPrimary,
+           let data = try? Data(contentsOf: primaryURL),
+           let generation = try? decodeValid(data) {
+            return generation
         }
 
-        if fileManager.fileExists(atPath: backupURL.path),
+        if hasBackup,
            let backupData = try? Data(contentsOf: backupURL),
-           let state = try? decodeValid(backupData) {
-            return state
+           let generation = try? decodeValid(backupData) {
+            return generation
         }
 
         throw SaveStoreError.noValidSaveGeneration
     }
 
-    private func decodeValid(_ data: Data) throws -> GameState {
-        let state = try SaveCodec.decode(data)
-        try SaveValidation.validate(state, catalog: catalog)
-        return state
+    private func decodeValid(_ data: Data) throws -> SaveGeneration {
+        let generation = try SaveCodec.decodeGeneration(
+            data,
+            catalog: catalog,
+            context: SaveMigrationContext(sourceSlotName: slotName)
+        )
+        try SaveValidation.validate(generation.state, catalog: catalog)
+        try validate(metadata: generation.metadata, for: generation.state)
+        return generation
+    }
+
+    private func validate(
+        metadata: SaveGenerationMetadata,
+        for state: GameState
+    ) throws {
+        guard metadata.isStructurallyValid,
+              metadata.campaignID == state.campaignID,
+              expectation?.accepts(metadata) != false else {
+            throw SaveStoreError.invalidContents
+        }
     }
 }

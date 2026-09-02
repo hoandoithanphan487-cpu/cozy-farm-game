@@ -76,6 +76,13 @@ struct M2CommandService: Sendable {
 
     func craft(state: inout GameState, recipeID: String) -> CommandFeedback {
         let before = state
+        if catalog.recipe(id: recipeID)?.isProcessingRecipe == true {
+            let stationName = catalog.displayName(
+                forNameKey: catalog.placedObject(id: catalog.recipe(id: recipeID)?.requiredPlacedObjectID ?? "")?.nameKey
+                    ?? "item.woodhoney_hearth"
+            )
+            return .failure("请对准\(stationName)进行加工。")
+        }
         switch CraftingService.craft(state: state, recipeID: recipeID, catalog: catalog) {
         case .failure(.unknownRecipe):
             state = before
@@ -93,6 +100,48 @@ struct M2CommandService: Sendable {
             state = next
             let recipeName = catalog.displayName(forNameKey: catalog.recipe(id: recipeID)?.nameKey ?? recipeID)
             return .success("制作完成：\(recipeName)。")
+        }
+    }
+
+    func process(state: inout GameState, recipeID: String) -> CommandFeedback {
+        let before = state
+        switch ProcessingService.process(state: state, recipeID: recipeID, catalog: catalog) {
+        case .failure(.unknownRecipe):
+            state = before
+            return .failure("❌ 未知配方，无法加工。")
+        case .failure(.recipeLocked):
+            state = before
+            return .failure("❌ 配方尚未解锁，无法加工。")
+        case .failure(.notProcessingRecipe):
+            state = before
+            return .failure("❌ 该配方不能在加工站使用。")
+        case .failure(.stationMissing):
+            state = before
+            return .failure("❌ 尚未放置加工站，无法加工。")
+        case .failure(.notAdjacent):
+            state = before
+            return .failure("❌ 请对准加工站再加工。")
+        case .failure(.insufficientStamina):
+            state = before
+            return .failure("❌ 体力不足，无法加工。")
+        case .failure(.insufficientMaterials):
+            state = before
+            return .failure("❌ 原料不足，无法加工。")
+        case .failure(.outputCapacityExceeded):
+            state = before
+            return .failure("❌ 背包已满，无法加工。")
+        case .success(let next):
+            state = next
+            let recipe = catalog.recipe(id: recipeID)
+            let recipeName = catalog.displayName(forNameKey: recipe?.nameKey ?? recipeID)
+            let input = recipe?.inputs.first
+            let output = recipe?.outputs.first
+            let inputName = catalog.displayName(forItemID: input?.itemID ?? "")
+            let outputName = catalog.displayName(forItemID: output?.itemID ?? "")
+            let stamina = recipe?.staminaCost ?? ContentID.processingStaminaCost
+            return .success(
+                "✅ 加工完成：\(recipeName)。\(inputName)−\(input?.quantity ?? 1)，\(outputName)+\(output?.quantity ?? 1)，体力 −\(stamina)。"
+            )
         }
     }
 
@@ -192,14 +241,16 @@ struct M2CommandService: Sendable {
     func sleep(
         state: inout GameState,
         clock: ClockSystem,
-        store: SaveStore? = nil
+        store: SaveStore? = nil,
+        persist: (@Sendable (GameState) throws -> Void)? = nil
     ) -> CommandFeedback {
         do {
             let summary = try SleepUseCase().sleep(
                 state: &state,
                 clock: clock,
                 catalog: catalog,
-                store: store
+                store: store,
+                persist: persist
             )
             return .success(summary.headline)
         } catch {

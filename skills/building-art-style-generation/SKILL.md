@@ -31,6 +31,13 @@ description: Generate original cozy medieval valley building art under the Creek
 - 生成参数、迭代记录、原创性检查记录；
 - 像素检查报告、导入配置、运行时截图和验收矩阵。
 
+开始前先锁定输出轨道：
+
+- `Pixel Runtime`：地图运行建筑，执行三剪影、六层、24×24 网格、nearest 与整数缩放的完整流程。
+- `HD Presentation`：建筑介绍/商店/场景展示插画，复用已批准的 silhouette、入口、功能锚点、色彩身份和原创识别件，输出 2048×2048 RGBA 高清绘本式单体插画。该轨道不得替代六层运行资产，也不得承载碰撞或地图拓扑。
+
+当建筑已在 Pixel Runtime 轨道完成三剪影与六层验收时，HD Presentation 轨道直接引用既有批准记录，不重复提出新剪影，不得借高清返工重新设计建筑。
+
 ## 工作流
 
 ### 1. 覆盖设计（coverage design）
@@ -83,6 +90,19 @@ description: Generate original cozy medieval valley building art under the Creek
 
 失败项必须标注为 `REVISE`，不得以截图“看起来差不多”代替检查。
 
+### 4A. 高清展示层生产与检查
+
+仅当任务明确指定 `HD Presentation` 时执行：
+
+- 以已批准的项目内建筑图为编辑目标，保持 silhouette、比例、入口、屋顶、地基和功能件不变；
+- 输出原生高细节绘本式游戏插画，不做像素化，不把低分辨率图插值放大冒充细节；
+- 2048×2048 RGBA8，主体完整居中，四边有透明安全边距，透明像素 RGB 清零；
+- 同一批建筑使用一致的轻微俯视三分之四镜头、左上暖光、暖木与冷青平衡、线条粗细和材质密度；
+- 100% 查看时检查木纹、石块、瓦片、青铜件、织物与水面的局部层次，并与 N-009 立绘的清晰度基准比较；
+- 禁止人物、背景场景、文字、Logo、水印、签名、投影底板、第二栋建筑和未经批准的新装饰。
+
+HD Presentation 失败项同样返回 `REVISE`；尺寸、Alpha 或边界通过不能替代视觉清晰度与风格一致性检查。
+
 ### 5. 运行时导入
 
 🧱 `tech` 按项目当前运行端执行导入：Xcode + Swift + SpriteKit。资产进入约定的 `Assets/` 路径后：
@@ -94,6 +114,8 @@ description: Generate original cozy medieval valley building art under the Creek
 5. 绑定建筑稳定 ID、footprint、碰撞、入口和交互点；
 6. 保留加载失败时的可读占位/回退，不阻断存档与核心路径；
 7. 检查纹理缓存与 draw/内存预算，避免每帧重新加载或生成图像。
+
+高清展示层另行进入 presentation 资源目录：保持宽高比，按界面尺寸线性缩放，不使用 nearest 放大像素块；加载失败回退到文字/原运行像素图，但不得影响地图碰撞、入口、存档或核心玩法。
 
 技术导入门禁需提供：配置 diff、资产存在性/尺寸检查、nearest 断言、稳定 ID 映射、运行时加载日志或等价证据。工程负责人返回 `APPROVED | REVISE | BLOCKED`。
 
@@ -135,4 +157,9 @@ Requested gates: content / tech / quality
 
 ## Prompt 生成规则
 
-生成 prompt 时只把模板中的变量替换为建筑事实；必须带上 Master Doc 的暖色中世纪溪谷像素语言、24×24 网格、清晰 silhouette、六层生产、nearest/整数缩放和原创性红线。禁止加入外部作品名、画师名、“像某某游戏”、外部色板、写实材质、3D 渲染或未经批准的新颜色。
+生成 prompt 时只把模板中的变量替换为建筑事实，并明确选择 `Pixel Runtime` 或 `HD Presentation`：
+
+- Pixel Runtime 必须带上 Master Doc 的暖色中世纪溪谷像素语言、24×24 网格、清晰 silhouette、六层生产、nearest/整数缩放和原创性红线。
+- HD Presentation 必须带上 Master Doc §1.4/§2.1 的高清绘本式展示语言、2048 RGBA、已批准造型不变、完整构图与 N-009 清晰度基准；不得写入 24×24、nearest 或像素化要求。
+
+两种轨道都禁止加入外部作品名、画师名、“像某某游戏”、外部色板、照片写实、3D 渲染或未经批准的新主体/功能件。

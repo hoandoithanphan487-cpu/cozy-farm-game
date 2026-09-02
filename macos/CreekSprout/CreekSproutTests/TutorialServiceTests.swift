@@ -8,9 +8,9 @@ final class TutorialServiceTests: XCTestCase {
     private var tutorial: TutorialService { TutorialService(catalog: catalog) }
     private var commands: M2CommandService { M2CommandService(catalog: catalog) }
     private let teachingPlots = [
-        GridPosition(x: 4, y: 1),
-        GridPosition(x: 5, y: 1),
-        GridPosition(x: 6, y: 1),
+        GridPosition(x: 4, y: 3),
+        GridPosition(x: 5, y: 3),
+        GridPosition(x: 6, y: 3),
     ]
     private let wildPlot = GridPosition(x: 2, y: 3)
 
@@ -22,7 +22,7 @@ final class TutorialServiceTests: XCTestCase {
         XCTAssertEqual(state.tutorial.currentStepID, ContentID.tutorialHarvest)
         XCTAssertTrue(tutorial.goalLine(for: state).contains("当前目标：收获 3 株成熟雾萝卜"))
         XCTAssertEqual(catalog.scenario.startingNpcSpawns.first?.npcID, ContentID.waterApprentice)
-        XCTAssertEqual(catalog.scenario.startingNpcSpawns.first?.position, GridPosition(x: 6, y: 0))
+        XCTAssertEqual(catalog.scenario.startingNpcSpawns.first?.position, GridPosition(x: 8, y: 6))
     }
 
     func testHarvestDepositTillPlantWaterTalkSaveSleepAdvanceInOrder() throws {
@@ -126,9 +126,9 @@ final class TutorialServiceTests: XCTestCase {
         state.facing = .down
         XCTAssertFalse(tutorial.canTalk(to: spawn, from: state))
 
-        state.position = GridPosition(x: 6, y: 1)
-        state.facing = .down
-        XCTAssertEqual(state.targetCell, spawn.position)
+        state.position = GridPosition(x: 8, y: 5)
+        state.facing = .up
+        XCTAssertEqual(state.targetCell(in: WorldCatalog.farmHomestead), spawn.position)
         XCTAssertTrue(tutorial.canTalk(to: spawn, from: state))
 
         state.position = spawn.position

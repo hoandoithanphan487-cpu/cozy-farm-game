@@ -7,6 +7,11 @@
 //  multipliers, deadlines or reward rules.
 //
 
+struct CommunityTalkCandidate: Equatable, Sendable {
+    var state: GameState
+    var feedback: CommandFeedback?
+}
+
 struct CommunityCommandService: Sendable {
     var catalog: ContentCatalog
 
@@ -16,11 +21,30 @@ struct CommunityCommandService: Sendable {
     /// grants trust; it never touches standing, watershed or event state, and
     /// talking to a neighbour changes nothing at all.
     func talk(state: inout GameState, npcID: String) -> CommandFeedback? {
-        guard catalog.isQuestGiver(npcID) else {
+        guard let transaction = talkCandidate(state: state, npcID: npcID) else {
             return nil
         }
+        state = transaction.state
+        return transaction.feedback
+    }
+
+    /// Pure candidate form for validate/save-before-commit workflows.
+    func talkCandidate(state: GameState, npcID: String) -> CommunityTalkCandidate? {
+        guard catalog.npc(id: npcID) != nil else {
+            return nil
+        }
+        var candidate = state
+        StoryMetricsRecorder.recordTalk(
+            metrics: &candidate.storyMetrics,
+            sourceID: "brookseed.story.metric.talk.day_\(state.clock.day).\(npcID)",
+            npcID: npcID,
+            day: state.clock.day
+        )
+        guard catalog.isQuestGiver(npcID) else {
+            return CommunityTalkCandidate(state: candidate, feedback: nil)
+        }
         switch RelationshipService.applyDailyFirstTalk(
-            state: &state,
+            state: &candidate,
             npcID: npcID,
             catalog: catalog
         ) {
@@ -28,15 +52,21 @@ struct CommunityCommandService: Sendable {
             return nil
         case .success(let grant):
             guard grant.didApply else {
-                return nil
+                return CommunityTalkCandidate(state: candidate, feedback: nil)
             }
             let name = catalog.npc(id: npcID)?.displayName ?? npcID
             if grant.wasZeroGrowth {
-                return .success("\(name)：今天的信任增长为 0.00（转述造成的误会尚未澄清）。")
+                return CommunityTalkCandidate(
+                    state: candidate,
+                    feedback: .success("\(name)：今天的信任增长为 0.00（转述造成的误会尚未澄清）。")
+                )
             }
             let awarded = TrustRecord(npcID: npcID, subpoints: grant.awardedSubpoints).displayPoints
             let total = TrustRecord(npcID: npcID, subpoints: grant.totalSubpoints).displayPoints
-            return .success("\(name)：今日首次交谈，信任 +\(awarded)（合计 \(total)）。")
+            return CommunityTalkCandidate(
+                state: candidate,
+                feedback: .success("\(name)：今日首次交谈，信任 +\(awarded)（合计 \(total)）。")
+            )
         }
     }
 

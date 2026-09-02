@@ -28,6 +28,12 @@ struct ShippingService: Sendable {
         case .failure(.capacityExceeded):
             return .failure(.capacityExceeded)
         case .success(let inventory):
+            guard StoryInventoryReservation.isPreserved(
+                state: state,
+                candidateInventory: inventory
+            ) else {
+                return .failure(.insufficientQuantity)
+            }
             var next = state
             next.inventory = inventory
             let mergeKey = ShippingEntry.mergeKey(

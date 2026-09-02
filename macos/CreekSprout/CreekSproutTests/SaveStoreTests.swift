@@ -224,7 +224,30 @@ final class SaveStoreTests: XCTestCase {
         }
     }
 
-    func testPlayerPositionsOutsideTenBySixAreRejected() throws {
+    func testRearCultivationCellsRoundTripWithoutSchemaExpansion() throws {
+        let store = SaveStore(directory: directory)
+        var original = GameState.vs0NewGame(catalog: .vs0)
+        let rear = GridPosition(x: 8, y: 13)
+        XCTAssertFalse(rear.isInsideFarm)
+        XCTAssertTrue(FarmCultivationCatalog.contains(rear))
+        original.farmCells[rear] = FarmCell(
+            prepared: true,
+            wateredToday: true,
+            cropID: ContentID.mistRadishCrop,
+            cropStage: 1,
+            stageProgressDays: 1,
+            plantedDay: 1
+        )
+
+        let schemaBefore = SaveSchema.currentVersion
+        try store.save(original)
+        let loaded = try store.load()
+        XCTAssertEqual(loaded, original)
+        XCTAssertEqual(loaded.farmCells[rear], original.farmCells[rear])
+        XCTAssertEqual(SaveSchema.currentVersion, schemaBefore)
+    }
+
+    func testLegacyPlayerPositionsRelocateIntoExpandedMaps() throws {
         let store = SaveStore(directory: directory)
         try store.save(GameState.m1NewGame())
         try? FileManager.default.removeItem(at: store.backupURL)
@@ -242,9 +265,9 @@ final class SaveStoreTests: XCTestCase {
             payload["position"] = ["x": coordinate.x, "y": coordinate.y]
             let illegal = try JSONSerialization.data(withJSONObject: payload, options: [.prettyPrinted])
             try illegal.write(to: store.primaryURL, options: .atomic)
-            XCTAssertThrowsError(try store.load()) { error in
-                XCTAssertEqual(error as? SaveStoreError, .noValidSaveGeneration)
-            }
+            let loaded = try store.load()
+            XCTAssertTrue(WorldCatalog.farmHomestead.contains(loaded.position))
+            XCTAssertFalse(WorldCatalog.farmHomestead.isBlocked(loaded.position))
             XCTAssertEqual(try Data(contentsOf: store.primaryURL), illegal)
         }
     }
@@ -446,7 +469,6 @@ final class SaveStoreTests: XCTestCase {
     func testMigratedInvalidV0SavesAreRejectedWithoutOverwriting() throws {
         let store = SaveStore(directory: directory)
         let cases = [
-            Data(#"{"position":{"x":10,"y":0},"clock":{"day":1,"minute":390},"inventory":{"itemID":"mist_radish_seed","quantity":1}}"#.utf8),
             Data(#"{"position":{"x":2,"y":1},"clock":{"day":1,"minute":390},"inventory":{"itemID":"not_a_real_item","quantity":1}}"#.utf8),
             Data(#"{"position":{"x":2,"y":1},"clock":{"day":1,"minute":390},"inventory":{"itemID":"mist_radish_seed","quantity":100}}"#.utf8),
         ]

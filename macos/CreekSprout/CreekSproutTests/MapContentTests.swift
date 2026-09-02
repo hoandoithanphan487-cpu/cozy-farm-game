@@ -12,20 +12,27 @@ final class MapContentTests: XCTestCase {
         let market = try XCTUnwrap(catalog.map(id: ContentID.creekMarket))
 
         XCTAssertEqual(farm.displayName, "农场与农舍")
-        XCTAssertEqual(farm.columns, 10)
-        XCTAssertEqual(farm.rows, 6)
+        XCTAssertEqual(farm.columns, 16)
+        XCTAssertEqual(farm.rows, 15)
         XCTAssertEqual(farm.spawns.count, 2)
         XCTAssertEqual(farm.exits.count, 1)
         XCTAssertFalse(farm.landmarks.isEmpty)
-        XCTAssertFalse(farm.blockedCells.isEmpty)
+        XCTAssertEqual(farm.buildings.count, 2)
+        XCTAssertEqual(farm.environmentBoundaryCells.count, 44)
+        XCTAssertTrue(
+            FarmCultivationCatalog.rearCultivableCells.isDisjoint(
+                with: farm.environmentBoundaryCells
+            )
+        )
 
         XCTAssertEqual(market.displayName, "溪岸集市")
-        XCTAssertEqual(market.columns, 10)
-        XCTAssertEqual(market.rows, 8)
+        XCTAssertEqual(market.columns, 18)
+        XCTAssertEqual(market.rows, 14)
         XCTAssertEqual(market.spawns.count, 1)
         XCTAssertEqual(market.exits.count, 1)
         XCTAssertGreaterThanOrEqual(market.landmarks.count, 4)
-        XCTAssertFalse(market.blockedCells.isEmpty)
+        XCTAssertEqual(market.buildings.count, 3)
+        XCTAssertEqual(market.waterCells.count, 54)
 
         let farmExit = try XCTUnwrap(farm.exit(id: ContentID.farmToMarketExit))
         XCTAssertEqual(farmExit.destinationMapID, ContentID.creekMarket)
@@ -113,7 +120,7 @@ final class MapTravelTests: XCTestCase {
     func testPlayerCanTravelFarmToMarketAndBack() {
         var state = GameState.vs0NewGame(catalog: catalog)
         XCTAssertEqual(state.currentMapID, ContentID.farmHomestead)
-        state.position = GridPosition(x: 5, y: 1)
+        state.position = GridPosition(x: 7, y: 1)
         state.facing = .down
         let stepToExit = MapTravelService.tryMove(state: &state, direction: .down, catalog: catalog)
         XCTAssertTrue(stepToExit.didMove)
@@ -121,22 +128,22 @@ final class MapTravelTests: XCTestCase {
         let toMarket = MapTravelService.interactWithExit(state: &state, catalog: catalog)
         XCTAssertTrue(toMarket?.didTravel == true)
         XCTAssertEqual(state.currentMapID, ContentID.creekMarket)
-        XCTAssertEqual(state.position, GridPosition(x: 5, y: 1))
+        XCTAssertEqual(state.position, GridPosition(x: 9, y: 11))
         XCTAssertTrue(WorldCatalog.creekMarket.contains(state.position))
 
-        state.facing = .down
-        let stepToReturn = MapTravelService.tryMove(state: &state, direction: .down, catalog: catalog)
+        state.facing = .up
+        let stepToReturn = MapTravelService.tryMove(state: &state, direction: .up, catalog: catalog)
         XCTAssertTrue(stepToReturn.didMove)
         let toFarm = MapTravelService.interactWithExit(state: &state, catalog: catalog)
         XCTAssertTrue(toFarm?.didTravel == true)
         XCTAssertEqual(state.currentMapID, ContentID.farmHomestead)
-        XCTAssertEqual(state.position, GridPosition(x: 5, y: 2))
+        XCTAssertEqual(state.position, GridPosition(x: 7, y: 1))
     }
 
     func testBlockedCellsRejectMovementAndSevenMarketNpcsAreApproachable() {
         var state = GameState.vs0NewGame(catalog: catalog)
         state.currentMapID = ContentID.creekMarket
-        state.position = GridPosition(x: 5, y: 1)
+        state.position = GridPosition(x: 9, y: 11)
 
         let blocked = MapTravelService.tryMove(state: &state, direction: .left, catalog: catalog)
         _ = blocked
@@ -226,7 +233,7 @@ final class MapSaveTests: XCTestCase {
         let store = SaveStore(directory: directory, catalog: catalog)
         var state = GameState.vs0NewGame(catalog: catalog)
         state.currentMapID = ContentID.creekMarket
-        state.position = GridPosition(x: 5, y: 1)
+        state.position = GridPosition(x: 9, y: 11)
         try store.save(state)
 
         let payload = try JSONSerialization.jsonObject(with: Data(contentsOf: store.primaryURL)) as! [String: Any]
@@ -235,7 +242,7 @@ final class MapSaveTests: XCTestCase {
 
         let loaded = try store.load()
         XCTAssertEqual(loaded.currentMapID, ContentID.creekMarket)
-        XCTAssertEqual(loaded.position, GridPosition(x: 5, y: 1))
+        XCTAssertEqual(loaded.position, GridPosition(x: 9, y: 11))
         XCTAssertTrue(WorldCatalog.creekMarket.contains(loaded.position))
         XCTAssertEqual(loaded.economy.balance, 720)
     }

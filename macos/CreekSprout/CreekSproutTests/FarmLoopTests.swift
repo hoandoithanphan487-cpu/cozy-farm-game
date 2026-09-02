@@ -110,6 +110,49 @@ final class FarmLoopTests: XCTestCase {
         XCTAssertFalse(state.cell(at: plot).hasCrop)
     }
 
+    func testSelectedSeedPlantsMatchingDataDrivenCrop() {
+        let catalog = ContentCatalog.vs0
+        var state = GameState.vs0NewGame(catalog: catalog)
+        state.farmCells = [:]
+        XCTAssertTrue(farm.apply(to: &state, target: plot, tool: .hoe, catalog: catalog).isSuccess)
+        let result = farm.apply(
+            to: &state,
+            target: plot,
+            tool: .seed,
+            catalog: catalog,
+            seedItemID: ContentID.streamLeafSeed
+        )
+        XCTAssertTrue(result.isSuccess)
+        XCTAssertEqual(state.cell(at: plot).cropID, ContentID.streamLeafCrop)
+        XCTAssertEqual(InventoryService.count(state.inventory, itemID: ContentID.streamLeafSeed), 1)
+        XCTAssertEqual(InventoryService.count(state.inventory, itemID: ContentID.mistRadishSeed), 8)
+    }
+
+    func testRearPlotSupportsFullFarmLoopWithoutExpandingAdjacentCells() {
+        let catalog = ContentCatalog.vs0
+        let rear = GridPosition(x: 7, y: 12)
+        var state = GameState.vs0NewGame(catalog: catalog)
+        state.farmCells = [:]
+
+        XCTAssertTrue(farm.apply(to: &state, target: rear, tool: .hoe, catalog: catalog).isSuccess)
+        XCTAssertTrue(farm.apply(to: &state, target: rear, tool: .seed, catalog: catalog).isSuccess)
+        XCTAssertTrue(farm.apply(to: &state, target: rear, tool: .water, catalog: catalog).isSuccess)
+        dayCycle.advanceCrops(state: &state, catalog: catalog)
+        XCTAssertTrue(farm.apply(to: &state, target: rear, tool: .water, catalog: catalog).isSuccess)
+        dayCycle.advanceCrops(state: &state, catalog: catalog)
+        XCTAssertTrue(state.cell(at: rear).readyToHarvest)
+        XCTAssertTrue(farm.apply(to: &state, target: rear, tool: .harvest, catalog: catalog).isSuccess)
+
+        let before = state
+        XCTAssertFalse(farm.apply(
+            to: &state,
+            target: GridPosition(x: 6, y: 12),
+            tool: .hoe,
+            catalog: catalog
+        ).isSuccess)
+        XCTAssertEqual(state, before)
+    }
+
     func testPauseReasonsCompose() {
         var state = GameState.m1NewGame()
         let clock = ClockSystem()

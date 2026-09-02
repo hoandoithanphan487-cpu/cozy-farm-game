@@ -13,12 +13,15 @@ final class CharacterVisualNode: SKNode {
     private var laidOutCellSize: CGFloat = 0
     private var motionAllowed = true
     private let assetStore: PixelAssetStore
+    private var sheetAnimator: SpriteSheetAnimator?
+    private var idleSprite: SKSpriteNode?
+    private var facing: CharacterFrameDirection = .down
 
     private let showsName: Bool
 
     /// True when this node is drawing `SKSpriteNode` from the pixel pipeline.
     var usesPixelTexture: Bool {
-        bodyRoot.childNode(withName: "pixel-sprite") != nil
+        sheetAnimator != nil || bodyRoot.childNode(withName: "pixel-sprite") != nil
     }
 
     init(
@@ -50,6 +53,7 @@ final class CharacterVisualNode: SKNode {
         }
         layout(cellSize: cellSize)
         startIdleBob()
+        startAmbientWalk()
     }
 
     required init?(coder aDecoder: NSCoder) {
@@ -58,12 +62,16 @@ final class CharacterVisualNode: SKNode {
 
     func setMotionAllowed(_ allowed: Bool) {
         motionAllowed = allowed
+        sheetAnimator?.setMotionAllowed(allowed)
         if allowed {
             startIdleBob()
             startBadgePulse()
+            startAmbientWalk()
         } else {
             bodyRoot.removeAction(forKey: "idle-bob")
             talkBadge?.removeAction(forKey: "badge-pulse")
+            removeAction(forKey: "ambient-walk")
+            showIdlePose()
             bodyRoot.zRotation = 0
             bodyRoot.setScale(1)
             talkBadge?.setScale(1)
@@ -86,7 +94,34 @@ final class CharacterVisualNode: SKNode {
         }
     }
 
-    func playWalkSway() {
+    /// Keeps identity and interaction markers local to the player's focus.
+    /// The character sprite itself remains visible at every distance.
+    func setContextVisibility(nameVisible: Bool, badgeVisible: Bool) {
+        childNode(withName: "display-name")?.isHidden = !nameVisible
+        childNode(withName: "display-name-plate")?.isHidden = !nameVisible
+        talkBadge?.isHidden = !badgeVisible
+        talkBadgeLabel?.isHidden = !badgeVisible
+    }
+
+    func setFacing(_ direction: Direction) {
+        facing = CharacterFrameDirection(direction)
+        sheetAnimator?.face(facing)
+    }
+
+    func playWalkSway(direction: Direction? = nil) {
+        if let direction {
+            facing = CharacterFrameDirection(direction)
+        }
+        if let sheetAnimator {
+            applyExpression(.walking, cellSize: laidOutCellSize)
+            showMotionSheet()
+            sheetAnimator.playWalk(facing: facing)
+            run(.sequence([
+                .wait(forDuration: 0.34),
+                .run { [weak self] in self?.showIdlePose() },
+            ]), withKey: "restore-idle")
+            return
+        }
         applyExpression(.walking, cellSize: laidOutCellSize)
         let sway = laidOutCellSize * 0.04
         let tilt: CGFloat = 0.12
@@ -111,6 +146,25 @@ final class CharacterVisualNode: SKNode {
         bodyRoot.run(action, withKey: "walk")
     }
 
+    @discardableResult
+    func playPlayerAction(event: String?, direction: Direction) -> Bool {
+        facing = CharacterFrameDirection(direction)
+        guard let key = RuntimeArtCatalog.playerActionKey(for: event),
+              let sheetAnimator else { return false }
+        applyExpression(event == "harvested" ? .harvesting : .walking, cellSize: laidOutCellSize)
+        showMotionSheet()
+        let played = sheetAnimator.playAction(key: key, facing: facing)
+        if played {
+            run(.sequence([
+                .wait(forDuration: 0.42),
+                .run { [weak self] in self?.showIdlePose() },
+            ]), withKey: "restore-idle")
+        } else {
+            showIdlePose()
+        }
+        return played
+    }
+
     func playHarvestPulse() {
         applyExpression(.harvesting, cellSize: laidOutCellSize)
         let lift = laidOutCellSize * 0.18
@@ -132,6 +186,36 @@ final class CharacterVisualNode: SKNode {
         bodyRoot.run(action, withKey: "harvest")
     }
 
+    private func showIdlePose() {
+        idleSprite?.isHidden = false
+        if idleSprite != nil {
+            sheetAnimator?.sprite.isHidden = true
+        }
+        sheetAnimator?.idle(facing: facing)
+        applyExpression(.idle, cellSize: laidOutCellSize)
+    }
+
+    private func showMotionSheet() {
+        guard sheetAnimator != nil else { return }
+        idleSprite?.isHidden = true
+        sheetAnimator?.sprite.isHidden = false
+    }
+
+    private func startAmbientWalk() {
+        guard showsName, motionAllowed else { return }
+        removeAction(forKey: "ambient-walk")
+        let delay = 3.6 + Double((UInt(bitPattern: definition.characterID.hashValue) % 17)) * 0.12
+        run(.repeatForever(.sequence([
+            .wait(forDuration: delay),
+            .run { [weak self] in
+                guard let self, self.currentExpression != .talking else { return }
+                let facings: [Direction] = [.down, .left, .right, .up]
+                let next = facings[Int(UInt(bitPattern: self.definition.characterID.hashValue) % 4)]
+                self.playWalkSway(direction: next)
+            },
+        ])), withKey: "ambient-walk")
+    }
+
     /// Snapshot pose without running SKAction (for evidence frames).
     func applySnapshotPose(_ expression: CharacterExpression, walkTilt: CGFloat = 0, harvestLift: CGFloat = 0) {
         bodyRoot.removeAllActions()
@@ -145,11 +229,32 @@ final class CharacterVisualNode: SKNode {
 
     private func rebuildShapes(cellSize: CGFloat) {
         bodyRoot.removeAllChildren()
+        sheetAnimator = nil
+        idleSprite = nil
         if let kind = PixelAssetCatalog.characterKind(for: definition.characterID),
            let sprite = assetStore.makeSprite(kind: kind, cellSize: cellSize) {
+            sprite.anchorPoint = CGPoint(x: 0.5, y: 0)
+            sprite.size = PixelMetrics.snap(CGSize(width: cellSize, height: cellSize * 1.5))
+            sprite.position = CGPoint(x: 0, y: -cellSize / 2)
             sprite.zPosition = 1
+            sprite.name = "pixel-sprite"
+            idleSprite = sprite
             bodyRoot.addChild(sprite)
-        } else {
+        }
+        if let walkKey = RuntimeArtCatalog.walkKey(for: definition.characterID),
+           let animator = SpriteSheetAnimator(
+                walkKey: walkKey,
+                cellSize: cellSize,
+                motionAllowed: motionAllowed,
+                assetStore: assetStore
+           ) {
+            animator.sprite.position = CGPoint(x: 0, y: -cellSize / 2)
+            animator.sprite.isHidden = idleSprite != nil
+            sheetAnimator = animator
+            bodyRoot.addChild(animator.sprite)
+            animator.idle(facing: facing)
+        }
+        if idleSprite == nil && sheetAnimator == nil {
             rebuildProceduralBody(cellSize: cellSize)
         }
 
@@ -189,9 +294,29 @@ final class CharacterVisualNode: SKNode {
                 return node
             }()
             name.text = definition.displayName
-            name.fontSize = max(9, cellSize * 0.18)
-            name.position = CGPoint(x: 0, y: -cellSize * 0.44)
+            name.fontSize = max(8, min(11, cellSize * 0.16))
+            name.fontColor = SKColor(red: 0.98, green: 0.96, blue: 0.88, alpha: 1)
+            name.horizontalAlignmentMode = .center
+            name.position = CGPoint(x: 0, y: cellSize * 0.58)
             name.zPosition = 6
+            let plate = childNode(withName: "display-name-plate") as? SKShapeNode ?? {
+                let node = SKShapeNode()
+                node.name = "display-name-plate"
+                addChild(node)
+                return node
+            }()
+            let plateSize = CGSize(width: max(36, name.frame.width + 10), height: max(12, name.fontSize + 6))
+            plate.path = CGPath(
+                roundedRect: CGRect(x: -plateSize.width / 2, y: -plateSize.height / 2, width: plateSize.width, height: plateSize.height),
+                cornerWidth: 4,
+                cornerHeight: 4,
+                transform: nil
+            )
+            plate.fillColor = SKColor(red: 0.08, green: 0.10, blue: 0.09, alpha: 0.72)
+            plate.strokeColor = SKColor(white: 1, alpha: 0.12)
+            plate.lineWidth = 1
+            plate.position = name.position
+            plate.zPosition = 5
         }
     }
 
@@ -242,7 +367,10 @@ final class CharacterVisualNode: SKNode {
         faceRoot.removeAllChildren()
         if usesPixelTexture {
             if let sprite = bodyRoot.childNode(withName: "pixel-sprite") {
-                sprite.setScale(expression == .talking ? 1.06 : 1)
+                // Pixel sheets must stay at an integer scale. The former 1.06
+                // talking pulse forced texels onto fractional screen pixels
+                // and made otherwise-nearest sprites look soft.
+                sprite.setScale(1)
             }
             return
         }
@@ -286,7 +414,7 @@ final class CharacterVisualNode: SKNode {
     }
 
     private func startIdleBob() {
-        guard motionAllowed else { return }
+        guard motionAllowed, !usesPixelTexture else { return }
         bodyRoot.removeAction(forKey: "idle-bob")
         let bob = SKAction.sequence([
             SKAction.moveBy(x: 0, y: 1.5, duration: 0.7),

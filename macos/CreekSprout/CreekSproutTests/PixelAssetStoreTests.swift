@@ -6,8 +6,8 @@ import XCTest
 final class PixelAssetStoreTests: XCTestCase {
     let store = PixelAssetStore.shared
 
-    func testAllElevenAssetsLoadWithSpecSizesAndNearestFilter() throws {
-        XCTAssertEqual(PixelAssetKind.allCases.count, 11)
+    func testAllFirstRoundAssetsLoadWithSpecSizesAndNearestFilter() throws {
+        XCTAssertEqual(PixelAssetKind.allCases.count, 20)
         let directory = try XCTUnwrap(store.assetsDirectory())
         for kind in PixelAssetKind.allCases {
             let url = directory.appendingPathComponent(kind.fileName)
@@ -121,7 +121,7 @@ final class PixelAssetStoreTests: XCTestCase {
             cellSize: 48,
             showsTalkBadge: true
         )
-        XCTAssertFalse(neighbor.usesPixelTexture)
+        XCTAssertTrue(neighbor.usesPixelTexture)
         XCTAssertNotNil(neighbor.childNode(withName: "talk-badge"))
         XCTAssertEqual((neighbor.childNode(withName: "talk-badge-label") as? SKLabelNode)?.text, "谈")
 
@@ -131,7 +131,8 @@ final class PixelAssetStoreTests: XCTestCase {
             showsTalkBadge: false,
             showsName: false
         )
-        XCTAssertFalse(player.usesPixelTexture)
+        XCTAssertTrue(player.usesPixelTexture)
+        XCTAssertNil(player.childNode(withName: "talk-badge"))
     }
 
     func testCropIDMapsToExistingAssetWithoutNewContentIDs() {
@@ -144,7 +145,51 @@ final class PixelAssetStoreTests: XCTestCase {
             .cropStreamLeaf
         )
         XCTAssertNil(PixelAssetCatalog.cropKind(for: "brookseed.crop.unknown_crop"))
-        XCTAssertNil(PixelAssetCatalog.characterKind(for: ContentID.neighborEvidence))
+        XCTAssertEqual(PixelAssetCatalog.characterKind(for: ContentID.neighborEvidence), .charNeighborEvidence)
+        XCTAssertEqual(
+            PixelAssetCatalog.characterKind(for: PlayerVisualID.sprout),
+            .charPlayer
+        )
+    }
+
+    func testFarmRuntimeAssetsResolveAllCropStagesAndWoodhoneyHearth() throws {
+        let directory = try XCTUnwrap(store.assetsDirectory())
+        let cropIDs = [
+            ContentID.mistRadishCrop,
+            ContentID.streamLeafCrop,
+            ContentID.amberBeanCrop,
+            ContentID.bellBerryCrop,
+            ContentID.honeyMelonCrop,
+        ]
+        for cropID in cropIDs {
+            for stage in 0...3 {
+                let assetID = try XCTUnwrap(
+                    PixelAssetCatalog.cropStageAssetID(
+                        cropID: cropID,
+                        stage: stage,
+                        readyToHarvest: stage == 3
+                    )
+                )
+                let texture = try XCTUnwrap(store.texture(named: assetID), assetID)
+                XCTAssertEqual(texture.filteringMode, .nearest, assetID)
+                if stage == 3 {
+                    XCTAssertTrue(assetID.hasSuffix("_stage_3_r2"), assetID)
+                }
+            }
+        }
+
+        let hearthID = try XCTUnwrap(
+            PixelAssetCatalog.placedObjectAssetID(for: ContentID.woodhoneyHearthObject)
+        )
+        XCTAssertEqual(hearthID, "prop_woodhoney_hearth")
+        let hearthTexture = try XCTUnwrap(store.texture(named: hearthID))
+        XCTAssertEqual(hearthTexture.filteringMode, .nearest)
+        let image = try XCTUnwrap(
+            NSImage(contentsOf: directory.appendingPathComponent("\(hearthID).png"))
+        )
+        let bitmap = try XCTUnwrap(NSBitmapImageRep(data: image.tiffRepresentation ?? Data()))
+        XCTAssertEqual(bitmap.pixelsWide, 48)
+        XCTAssertEqual(bitmap.pixelsHigh, 48)
     }
 
     private func assertSolidBlock(_ bitmap: NSBitmapImageRep, originX: Int, originY: Int, factor: Int) {

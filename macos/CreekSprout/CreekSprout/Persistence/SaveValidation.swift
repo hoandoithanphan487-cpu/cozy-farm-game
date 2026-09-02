@@ -7,6 +7,11 @@ enum SaveValidation {
     static let maxUnitPriceSnapshot = 1_000_000
     static let maxLineAmount = 10_000_000
     static let maxSettlementTotal = 10_000_000
+    static let maxAnimalAgeDays = 100_000
+    static let maxAnimalCareDays = 100_000
+    static let maxCatShopReceiptTotal = 10_000_000
+    static let maxDay = 1_000_000
+    static let maxFarmProgress = 10_000_000
 
     static func validate(_ state: GameState, catalog: ContentCatalog) throws {
         guard ContentID.isValid(state.currentMapID), catalog.knowsMapID(state.currentMapID) else {
@@ -21,7 +26,8 @@ enum SaveValidation {
         guard (1...Self.maxCapacity).contains(state.inventoryCapacity) else {
             throw SaveStoreError.invalidContents
         }
-        guard state.clock.day >= 1, (0...Self.maxMinute).contains(state.clock.minute) else {
+        guard (1...Self.maxDay).contains(state.clock.day),
+              (0...Self.maxMinute).contains(state.clock.minute) else {
             throw SaveStoreError.invalidContents
         }
         guard state.inventory.count <= state.inventoryCapacity else {
@@ -37,10 +43,13 @@ enum SaveValidation {
             }
         }
         for (coordinate, cell) in state.farmCells {
-            guard coordinate.isInsideFarm else {
+            guard FarmCultivationCatalog.contains(coordinate) else {
                 throw SaveStoreError.invalidContents
             }
-            guard cell.fertility >= 0, cell.cropStage >= 0, cell.stageProgressDays >= 0, cell.plantedDay >= 0 else {
+            guard (0...Self.maxFarmProgress).contains(cell.fertility),
+                  (0...Self.maxFarmProgress).contains(cell.cropStage),
+                  (0...Self.maxFarmProgress).contains(cell.stageProgressDays),
+                  (0...state.clock.day).contains(cell.plantedDay) else {
                 throw SaveStoreError.invalidContents
             }
             if cell.cropID.isEmpty {
@@ -60,6 +69,103 @@ enum SaveValidation {
         try validateRelationships(state, catalog: catalog)
         try validateSettings(state.settings)
         try validateSelectedRecipe(state.selectedRecipeID, catalog: catalog)
+        try validateLivestock(state.livestock, currentDay: state.clock.day)
+        try validateCatShop(
+            state.catShop,
+            economy: state.economy,
+            currentDay: state.clock.day,
+            catalog: catalog
+        )
+        try validateN027(state, catalog: catalog)
+    }
+
+    private static func validateLivestock(_ livestock: LivestockState, currentDay: Int) throws {
+        let ids = livestock.animals.map(\.instanceID)
+        guard ids == ids.sorted(), Set(ids).count == ids.count else {
+            throw SaveStoreError.invalidContents
+        }
+        for animal in livestock.animals {
+            guard ContentID.isValid(animal.instanceID),
+                  ContentID.isValid(animal.definitionID),
+                  LivestockCatalog.definition(id: animal.definitionID) != nil,
+                  !animal.displayName.isEmpty,
+                  animal.displayName.count <= 40,
+                  (0...Self.maxAnimalAgeDays).contains(animal.ageDays),
+                  (0...Self.maxAnimalCareDays).contains(animal.totalCareDays) else {
+                throw SaveStoreError.invalidContents
+            }
+            if let lastCaredDay = animal.lastCaredDay {
+                guard (1...currentDay).contains(lastCaredDay) else {
+                    throw SaveStoreError.invalidContents
+                }
+            }
+        }
+    }
+
+    private static func validateCatShop(
+        _ catShop: CatShopState,
+        economy: EconomyState,
+        currentDay: Int,
+        catalog: ContentCatalog
+    ) throws {
+        let ids = catShop.receipts.map(\.receiptID)
+        guard ids == ids.sorted(), Set(ids).count == ids.count else {
+            throw SaveStoreError.invalidContents
+        }
+        for receipt in catShop.receipts {
+            guard ContentID.isValid(receipt.receiptID),
+                  ContentID.isValid(receipt.offerID),
+                  ContentID.isValid(receipt.subjectID),
+                  ContentID.isValid(receipt.definitionID),
+                  (1...currentDay).contains(receipt.day),
+                  (1...CatShopCatalog.cropDailyLimit).contains(receipt.quantity),
+                  receipt.unitPrice > 0,
+                  (1...Self.maxCatShopReceiptTotal).contains(receipt.total) else {
+                throw SaveStoreError.invalidContents
+            }
+            let expectedTotal = try boundedProduct(
+                receipt.unitPrice,
+                receipt.quantity,
+                max: Self.maxCatShopReceiptTotal
+            )
+            guard expectedTotal == receipt.total,
+                  let offer = CatShopCatalog.offer(id: receipt.offerID, day: receipt.day, content: catalog),
+                  offer.unitPrice == receipt.unitPrice,
+                  receipt.quantity <= offer.dailyLimit else {
+                throw SaveStoreError.invalidContents
+            }
+            switch (receipt.kind, offer.kind) {
+            case (.crop, .crop(let itemID)):
+                guard receipt.definitionID == itemID, catalog.knowsItemID(itemID) else {
+                    throw SaveStoreError.invalidContents
+                }
+            case (.animal, .animal(let definitionID)):
+                guard receipt.quantity == 1,
+                      receipt.definitionID == definitionID,
+                      LivestockCatalog.definition(id: definitionID) != nil else {
+                    throw SaveStoreError.invalidContents
+                }
+            default:
+                throw SaveStoreError.invalidContents
+            }
+            guard economy.ledger.contains(where: {
+                $0.reasonID == ContentID.catShopSupplyReason
+                    && $0.sourceRef == receipt.receiptID
+                    && $0.dayIndex == receipt.day
+                    && $0.amount == receipt.total
+            }) else {
+                throw SaveStoreError.invalidContents
+            }
+        }
+        for offerDay in Set(catShop.receipts.map(\.day)) {
+            let offers = CatShopCatalog.offers(day: offerDay, content: catalog)
+            for offer in offers {
+                let quantity = catShop.suppliedQuantity(offerID: offer.id, day: offerDay)
+                guard quantity <= offer.dailyLimit else {
+                    throw SaveStoreError.invalidContents
+                }
+            }
+        }
     }
 
     private static func validateSelectedRecipe(_ recipeID: String?, catalog: ContentCatalog) throws {
@@ -137,7 +243,15 @@ enum SaveValidation {
                 throw SaveStoreError.invalidContents
             }
             let expectedID = SettlementRecord.makeID(scenarioID: record.scenarioID, gameDay: record.gameDay)
-            guard record.settlementID == expectedID, record.scenarioID == scenarioID, record.gameDay >= 1 else {
+            // N-027 Q08 homecoming writes one journey settlement per campaign
+            // with a stable, bounded, ContentID-shaped identifier that cannot
+            // collide with the ordinary per-day settlement.
+            let journeySettlementID = "\(record.scenarioID).journey_homecoming."
+            let isJourneySettlement = record.settlementID.hasPrefix(journeySettlementID)
+                && record.settlementID.count <= 120
+                && ContentID.isValid(record.settlementID)
+            guard (record.settlementID == expectedID || isJourneySettlement),
+                  record.scenarioID == scenarioID, record.gameDay >= 1 else {
                 throw SaveStoreError.invalidContents
             }
             guard (0...Self.maxSettlementTotal).contains(record.total) else {
@@ -207,7 +321,10 @@ enum SaveValidation {
                 }
             }
         }
-        let reachStart = playerOnFarm ? state.position : catalog.scenario.playerStart
+        let preferredStart = playerOnFarm ? state.position : catalog.scenario.playerStart
+        let reachStart = preferredStart.isInsideFarm
+            ? preferredStart
+            : GridPosition(x: min(preferredStart.x, GridPosition.columnCount - 1), y: GridPosition.rowCount - 1)
         guard PlacementService.canReach(exit, from: reachStart, blocked: occupied) else {
             throw SaveStoreError.invalidContents
         }

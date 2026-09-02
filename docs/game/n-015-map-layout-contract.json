@@ -1,0 +1,376 @@
+{
+  "coordinate_system": {
+    "cell_origin": "southwest",
+    "screen_origin": "top_left",
+    "tile_size_px": 24,
+    "x_axis": "east",
+    "y_axis": "north"
+  },
+  "decision_id": "DEC-035",
+  "deterministic_ordering": {
+    "buildings": "footprint origin y ascending, then x ascending",
+    "cells": "x ascending, then y ascending",
+    "layers": "order ascending",
+    "named_records": "explicit semantic order frozen in this document"
+  },
+  "forbidden_scope": [
+    "N-014 candidate content",
+    "dialogue changes",
+    "economy changes",
+    "formal audio production",
+    "item or recipe changes",
+    "quest rule changes",
+    "save schema changes",
+    "stable ID changes"
+  ],
+  "hud": {
+    "behavior": {
+      "building_card": "hidden by default; compact only while near a building; expanded only after explicit interaction; dismissible",
+      "debug_layer": "hidden by default and toggled only with H",
+      "toast_priority": [
+        "error",
+        "warning",
+        "success"
+      ],
+      "transient_feedback_seconds": 2.5
+    },
+    "safe_zones": [
+      {
+        "building_card_expanded": [568, 80, 376, 400],
+        "building_card_near": [696, 80, 248, 120],
+        "context_prompt": [240, 456, 480, 40],
+        "origin": "top_left",
+        "status_left": [16, 16, 272, 44],
+        "status_right": [688, 16, 256, 44],
+        "toast": [240, 504, 480, 48],
+        "toolbelt": [300, 568, 360, 56],
+        "viewport": [960, 640],
+        "world_safe_rect_default": [16, 72, 928, 376],
+        "world_safe_rect_near_building": [16, 72, 664, 376]
+      },
+      {
+        "building_card_expanded": [872, 80, 392, 480],
+        "building_card_near": [976, 80, 288, 128],
+        "context_prompt": [360, 608, 560, 40],
+        "origin": "top_left",
+        "status_left": [16, 16, 304, 44],
+        "status_right": [960, 16, 304, 44],
+        "toast": [360, 656, 560, 48],
+        "toolbelt": [456, 728, 368, 56],
+        "viewport": [1280, 800],
+        "world_safe_rect_default": [16, 72, 1248, 528],
+        "world_safe_rect_near_building": [16, 72, 840, 528]
+      }
+    ]
+  },
+  "immutable_stable_ids": {
+    "buildings": [
+      "brookseed.landmark.farm_house",
+      "brookseed.landmark.farm_sluice",
+      "brookseed.landmark.market_seed_shed",
+      "brookseed.landmark.market_warden_post",
+      "brookseed.landmark.market_wharf"
+    ],
+    "exits": [
+      "brookseed.exit.farm_to_market",
+      "brookseed.exit.market_to_farm"
+    ],
+    "maps": [
+      "brookseed.map.creek_market",
+      "brookseed.map.farm_homestead"
+    ],
+    "npcs": [
+      "brookseed.npc.creek_warden",
+      "brookseed.npc.neighbor_consensus",
+      "brookseed.npc.neighbor_evidence",
+      "brookseed.npc.neighbor_hearsay",
+      "brookseed.npc.neighbor_storyteller",
+      "brookseed.npc.seed_steward",
+      "brookseed.npc.water_apprentice"
+    ],
+    "spawns": [
+      "brookseed.spawn.farm_from_market",
+      "brookseed.spawn.farm_wake",
+      "brookseed.spawn.market_from_farm"
+    ],
+    "stable_id_families": [
+      "all existing crop IDs",
+      "all existing dialogue IDs",
+      "all existing item IDs",
+      "all existing placed-object IDs",
+      "all existing quest IDs",
+      "all existing recipe IDs"
+    ]
+  },
+  "movement_semantics": {
+    "blocked_union": [
+      "building.collision_cells",
+      "canal_cells",
+      "environment_boundary_cells",
+      "static_obstacle_cells",
+      "water_cells"
+    ],
+    "doors": "walkable and contained in footprint but excluded from collision_cells",
+    "interaction_cells": "walkable, outside collision, and reachable from a spawn",
+    "npc_positions": "walkable terrain reserved at runtime; never a door, exit, spawn, or main-road cell",
+    "roof_occlusion": "render-only; never added to collision",
+    "walkable": "every in-bounds cell not in blocked_union; NPC occupancy is added only for route validation and runtime actor collision"
+  },
+  "maps": [
+    {
+      "buildings": [
+        {
+          "collision_cells": [[1,8],[1,9],[1,10],[1,11],[2,8],[2,9],[2,10],[2,11],[3,9],[3,10],[3,11],[4,8],[4,9],[4,10],[4,11],[5,8],[5,9],[5,10],[5,11]],
+          "door": [3,8],
+          "footprint": {"height":4,"origin":[1,8],"width":5},
+          "id": "brookseed.landmark.farm_house",
+          "interaction_cells": [[3,7]],
+          "layers": [
+            {"filename":"building_farm_house_base.png","native_size":[144,144],"order":0,"semantic":"base"},
+            {"filename":"building_farm_house_structure.png","native_size":[144,144],"order":1,"semantic":"structure"},
+            {"filename":"building_farm_house_roof.png","native_size":[144,144],"order":2,"semantic":"roof"},
+            {"filename":"building_farm_house_detail.png","native_size":[144,144],"order":3,"semantic":"detail"},
+            {"filename":"building_farm_house_interaction.png","native_size":[144,144],"order":4,"semantic":"interaction"},
+            {"filename":"building_farm_house_state_fx.png","native_size":[144,144],"order":5,"semantic":"state_fx"}
+          ],
+          "occlusion_cells": [[1,8],[2,8],[3,8],[4,8],[5,8]],
+          "render_anchor": {"cell":[3,8],"normalized":[0.5,0.0],"pixel_offset":[0,-12]},
+          "state": "default"
+        },
+        {
+          "collision_cells": [[10,8],[10,9],[10,10],[10,11],[11,8],[11,9],[11,10],[11,11],[12,9],[12,10],[12,11],[13,8],[13,9],[13,10],[13,11],[14,8],[14,9],[14,10],[14,11]],
+          "door": [12,8],
+          "footprint": {"height":4,"origin":[10,8],"width":5},
+          "id": "brookseed.landmark.farm_sluice",
+          "interaction_cells": [[12,7]],
+          "layers": [
+            {"filename":"building_farm_sluice_base.png","native_size":[192,168],"order":0,"semantic":"base"},
+            {"filename":"building_farm_sluice_structure.png","native_size":[192,168],"order":1,"semantic":"structure"},
+            {"filename":"building_farm_sluice_roof.png","native_size":[192,168],"order":2,"semantic":"roof"},
+            {"filename":"building_farm_sluice_detail.png","native_size":[192,168],"order":3,"semantic":"detail"},
+            {"filename":"building_farm_sluice_interaction.png","native_size":[192,168],"order":4,"semantic":"interaction"},
+            {"filename":"building_farm_sluice_state_fx.png","native_size":[192,168],"order":5,"semantic":"state_fx"}
+          ],
+          "occlusion_cells": [[10,8],[11,8],[12,8],[13,8],[14,8]],
+          "render_anchor": {"cell":[12,8],"normalized":[0.5,0.0],"pixel_offset":[-12,-12]},
+          "state": "default_or_active"
+        }
+      ],
+      "canal_cells": [
+        {"cell":[13,2],"semantic":"ns"},{"cell":[13,3],"semantic":"ns"},{"cell":[13,4],"semantic":"ns"},{"cell":[13,5],"semantic":"ns"},{"cell":[13,6],"semantic":"ns"},{"cell":[13,7],"semantic":"ns"}
+      ],
+      "dimensions": {"columns":16,"rows":15},
+      "environment_boundary_cells": [[0,12],[0,13],[0,14],[1,12],[1,13],[1,14],[2,12],[2,13],[2,14],[3,12],[3,13],[3,14],[4,12],[4,13],[4,14],[5,12],[5,13],[5,14],[6,12],[6,13],[6,14],[7,14],[8,14],[9,12],[9,13],[9,14],[10,12],[10,13],[10,14],[11,12],[11,13],[11,14],[12,12],[12,13],[12,14],[13,12],[13,13],[13,14],[14,12],[14,13],[14,14],[15,12],[15,13],[15,14]],
+      "exits": [
+        {"cell":[7,0],"destination_map_id":"brookseed.map.creek_market","destination_spawn_id":"brookseed.spawn.market_from_farm","id":"brookseed.exit.farm_to_market"}
+      ],
+      "farm_area": {
+        "primary_rectangles": [[2,2,5,4],[8,2,4,4]],
+        "rear_cultivable_cells": [[7,12],[7,13],[8,12],[8,13]],
+        "starting_cells": [[4,3],[5,3],[6,3]],
+        "legacy_farm_cells_remain_valid": true
+      },
+      "gather_targets": [
+        {"cell":[1,6],"id":"brookseed.gather.farm_wood_cache"},
+        {"cell":[11,1],"id":"brookseed.gather.farm_reed_cache"},
+        {"cell":[12,6],"id":"brookseed.gather.farm_moss_cache"}
+      ],
+      "id": "brookseed.map.farm_homestead",
+      "landmarks": [
+        {"anchor":[3,8],"id":"brookseed.landmark.farm_house"},
+        {"anchor":[5,3],"id":"brookseed.landmark.farm_beds"},
+        {"anchor":[7,0],"id":"brookseed.landmark.farm_steps"},
+        {"anchor":[12,8],"id":"brookseed.landmark.farm_sluice"}
+      ],
+      "legacy_bounds": {"columns":10,"rows":6},
+      "npc_positions": [
+        {"approach_cells":[[7,6],[8,5],[8,7],[9,6]],"id":"brookseed.npc.water_apprentice","position":[8,6],"scope":"teaching_spawn"}
+      ],
+      "path_cells": [[3,7],[4,7],[5,7],[6,7],[7,0],[7,1],[7,2],[7,3],[7,4],[7,5],[7,6],[7,7],[8,7],[9,7],[10,7],[11,7],[12,7]],
+      "quest_targets": [
+        {"cell":[5,3],"id":"brookseed.landmark.farm_beds","purpose":"tutorial farming"},
+        {"cell":[8,6],"id":"brookseed.npc.water_apprentice","purpose":"tutorial talk and canal delivery"},
+        {"cell":[12,7],"id":"brookseed.interaction.farm_sluice.gate","purpose":"sluice interaction"}
+      ],
+      "spawns": [
+        {"id":"brookseed.spawn.farm_from_market","position":[7,1]},
+        {"id":"brookseed.spawn.farm_wake","position":[7,6]}
+      ],
+      "terrain": {"default":"grass","path_semantic":"stone_path","visual_variants":"deterministic_hash"},
+      "water_cells": [
+        {"cell":[12,0],"semantic":"corner_sw"},{"cell":[12,1],"semantic":"corner_nw"},{"cell":[13,0],"semantic":"edge_s"},{"cell":[13,1],"semantic":"edge_n"},{"cell":[14,0],"semantic":"corner_se"},{"cell":[14,1],"semantic":"corner_ne"}
+      ],
+      "world_safe_zone": {"playable_bounds":[0,0,15,11],"visual_buffer_rows":[12,13,14]}
+    },
+    {
+      "buildings": [
+        {
+          "collision_cells": [[1,3],[1,4],[2,3],[2,4],[3,3],[4,3],[4,4],[5,3],[5,4]],
+          "door": [3,4],
+          "footprint": {"height":2,"origin":[1,3],"width":5},
+          "id": "brookseed.landmark.market_wharf",
+          "interaction_cells": [[3,5]],
+          "layers": [
+            {"filename":"building_market_wharf_base.png","native_size":[144,96],"order":0,"semantic":"base"},
+            {"filename":"building_market_wharf_structure.png","native_size":[144,96],"order":1,"semantic":"structure"},
+            {"filename":"building_market_wharf_roof.png","native_size":[144,96],"order":2,"semantic":"roof"},
+            {"filename":"building_market_wharf_detail.png","native_size":[144,96],"order":3,"semantic":"detail"},
+            {"filename":"building_market_wharf_interaction.png","native_size":[144,96],"order":4,"semantic":"interaction"},
+            {"filename":"building_market_wharf_state_fx.png","native_size":[144,96],"order":5,"semantic":"state_fx"}
+          ],
+          "occlusion_cells": [[1,4],[2,4],[3,4],[4,4],[5,4]],
+          "render_anchor": {"cell":[3,3],"normalized":[0.5,0.0],"pixel_offset":[0,-12]},
+          "state": "default_or_wet"
+        },
+        {
+          "collision_cells": [[1,10],[2,9],[2,10],[3,9],[3,10]],
+          "door": [1,9],
+          "footprint": {"height":2,"origin":[1,9],"width":3},
+          "id": "brookseed.landmark.market_seed_shed",
+          "interaction_cells": [[1,8]],
+          "layers": [
+            {"filename":"building_market_seed_shed_base.png","native_size":[96,96],"order":0,"semantic":"base"},
+            {"filename":"building_market_seed_shed_structure.png","native_size":[96,96],"order":1,"semantic":"structure"},
+            {"filename":"building_market_seed_shed_roof.png","native_size":[96,96],"order":2,"semantic":"roof"},
+            {"filename":"building_market_seed_shed_detail.png","native_size":[96,96],"order":3,"semantic":"detail"},
+            {"filename":"building_market_seed_shed_interaction.png","native_size":[96,96],"order":4,"semantic":"interaction"},
+            {"filename":"building_market_seed_shed_state_fx.png","native_size":[96,96],"order":5,"semantic":"state_fx"}
+          ],
+          "occlusion_cells": [[1,9],[2,9],[3,9]],
+          "render_anchor": {"cell":[2,9],"normalized":[0.5,0.0],"pixel_offset":[0,-12]},
+          "state": "default_or_open"
+        },
+        {
+          "collision_cells": [[14,9],[14,10],[15,9],[15,10],[16,10]],
+          "door": [16,9],
+          "footprint": {"height":2,"origin":[14,9],"width":3},
+          "id": "brookseed.landmark.market_warden_post",
+          "interaction_cells": [[16,8]],
+          "layers": [
+            {"filename":"building_market_warden_post_base.png","native_size":[96,96],"order":0,"semantic":"base"},
+            {"filename":"building_market_warden_post_structure.png","native_size":[96,96],"order":1,"semantic":"structure"},
+            {"filename":"building_market_warden_post_roof.png","native_size":[96,96],"order":2,"semantic":"roof"},
+            {"filename":"building_market_warden_post_detail.png","native_size":[96,96],"order":3,"semantic":"detail"},
+            {"filename":"building_market_warden_post_interaction.png","native_size":[96,96],"order":4,"semantic":"interaction"},
+            {"filename":"building_market_warden_post_state_fx.png","native_size":[96,96],"order":5,"semantic":"state_fx"}
+          ],
+          "occlusion_cells": [[14,9],[15,9],[16,9]],
+          "render_anchor": {"cell":[15,9],"normalized":[0.5,0.0],"pixel_offset":[0,-12]},
+          "state": "default_or_open"
+        }
+      ],
+      "canal_cells": [],
+      "dimensions": {"columns":18,"rows":14},
+      "environment_boundary_cells": [[0,3],[0,4],[0,5],[0,6],[0,7],[0,8],[0,9],[0,10],[0,11],[0,12],[0,13],[1,13],[2,13],[3,13],[4,13],[5,13],[6,13],[7,13],[8,13],[9,13],[10,13],[11,13],[12,13],[13,13],[14,13],[15,13],[16,13],[17,3],[17,4],[17,5],[17,6],[17,7],[17,8],[17,9],[17,10],[17,11],[17,12],[17,13]],
+      "exits": [
+        {"cell":[9,12],"destination_map_id":"brookseed.map.farm_homestead","destination_spawn_id":"brookseed.spawn.farm_from_market","id":"brookseed.exit.market_to_farm"}
+      ],
+      "farm_area": null,
+      "gather_targets": [
+        {"cell":[6,4],"id":"brookseed.gather.market_wood_cache"},
+        {"cell":[12,4],"id":"brookseed.gather.market_reed_cache"},
+        {"cell":[15,4],"id":"brookseed.gather.market_moss_cache"},
+        {"cell":[16,3],"id":"brookseed.gather.restored_brook_cache","required_unlock_id":"brookseed.gather.restored_brook_cache"}
+      ],
+      "id": "brookseed.map.creek_market",
+      "landmarks": [
+        {"anchor":[16,2],"id":"brookseed.landmark.market_blocked_mouth"},
+        {"anchor":[1,9],"id":"brookseed.landmark.market_seed_shed"},
+        {"anchor":[9,12],"id":"brookseed.landmark.market_steps"},
+        {"anchor":[6,7],"id":"brookseed.landmark.market_table"},
+        {"anchor":[16,9],"id":"brookseed.landmark.market_warden_post"},
+        {"anchor":[3,4],"id":"brookseed.landmark.market_wharf"}
+      ],
+      "legacy_bounds": {"columns":10,"rows":8},
+      "npc_positions": [
+        {"approach_cells":[[12,9],[13,8],[13,10]],"id":"brookseed.npc.creek_warden","position":[13,9]},
+        {"approach_cells":[[6,11],[7,10],[7,12],[8,11]],"id":"brookseed.npc.neighbor_consensus","position":[7,11]},
+        {"approach_cells":[[10,6],[11,5],[11,7],[12,6]],"id":"brookseed.npc.neighbor_evidence","position":[11,6]},
+        {"approach_cells":[[4,7],[5,6],[5,8]],"id":"brookseed.npc.neighbor_hearsay","position":[5,7]},
+        {"approach_cells":[[6,6],[7,5],[7,7]],"id":"brookseed.npc.neighbor_storyteller","position":[7,6]},
+        {"approach_cells":[[4,8],[4,10],[5,9]],"id":"brookseed.npc.seed_steward","position":[4,9]},
+        {"approach_cells":[[2,6],[3,5],[3,7],[4,6]],"id":"brookseed.npc.water_apprentice","position":[3,6]}
+      ],
+      "path_cells": [[1,8],[2,5],[2,6],[2,7],[2,8],[3,5],[3,8],[4,5],[4,8],[5,5],[5,8],[6,5],[6,8],[7,5],[7,8],[8,3],[8,4],[8,5],[8,6],[8,7],[8,8],[8,9],[8,10],[8,11],[8,12],[9,3],[9,4],[9,5],[9,6],[9,7],[9,8],[9,9],[9,10],[9,11],[9,12],[10,5],[10,8],[11,5],[11,8],[12,5],[12,8],[13,5],[13,8],[14,5],[14,8],[15,5],[15,6],[15,7],[15,8],[16,8]],
+      "quest_targets": [
+        {"cell":[13,9],"id":"brookseed.npc.creek_warden","purpose":"optional notice objective"},
+        {"cell":[16,2],"id":"brookseed.landmark.market_blocked_mouth","purpose":"restoration state landmark"},
+        {"cell":[3,6],"id":"brookseed.npc.water_apprentice","purpose":"mainline dialogue"}
+      ],
+      "spawns": [
+        {"id":"brookseed.spawn.market_from_farm","position":[9,11]}
+      ],
+      "static_obstacle_cells": [[6,7]],
+      "terrain": {"default":"grass","path_semantic":"stone_path","plaza_semantic":"wet_stone","visual_variants":"deterministic_hash"},
+      "water_cells": [
+        {"cell":[0,0],"semantic":"corner_sw"},{"cell":[0,1],"semantic":"edge_w"},{"cell":[0,2],"semantic":"corner_nw"},
+        {"cell":[1,0],"semantic":"edge_s"},{"cell":[1,1],"semantic":"base"},{"cell":[1,2],"semantic":"edge_n"},
+        {"cell":[2,0],"semantic":"edge_s"},{"cell":[2,1],"semantic":"base"},{"cell":[2,2],"semantic":"edge_n"},
+        {"cell":[3,0],"semantic":"edge_s"},{"cell":[3,1],"semantic":"base"},{"cell":[3,2],"semantic":"edge_n"},
+        {"cell":[4,0],"semantic":"edge_s"},{"cell":[4,1],"semantic":"base"},{"cell":[4,2],"semantic":"edge_n"},
+        {"cell":[5,0],"semantic":"edge_s"},{"cell":[5,1],"semantic":"base"},{"cell":[5,2],"semantic":"edge_n"},
+        {"cell":[6,0],"semantic":"edge_s"},{"cell":[6,1],"semantic":"base"},{"cell":[6,2],"semantic":"edge_n"},
+        {"cell":[7,0],"semantic":"edge_s"},{"cell":[7,1],"semantic":"base"},{"cell":[7,2],"semantic":"edge_n"},
+        {"cell":[8,0],"semantic":"edge_s"},{"cell":[8,1],"semantic":"base"},{"cell":[8,2],"semantic":"edge_n"},
+        {"cell":[9,0],"semantic":"edge_s"},{"cell":[9,1],"semantic":"base"},{"cell":[9,2],"semantic":"edge_n"},
+        {"cell":[10,0],"semantic":"edge_s"},{"cell":[10,1],"semantic":"base"},{"cell":[10,2],"semantic":"edge_n"},
+        {"cell":[11,0],"semantic":"edge_s"},{"cell":[11,1],"semantic":"base"},{"cell":[11,2],"semantic":"edge_n"},
+        {"cell":[12,0],"semantic":"edge_s"},{"cell":[12,1],"semantic":"base"},{"cell":[12,2],"semantic":"edge_n"},
+        {"cell":[13,0],"semantic":"edge_s"},{"cell":[13,1],"semantic":"base"},{"cell":[13,2],"semantic":"edge_n"},
+        {"cell":[14,0],"semantic":"edge_s"},{"cell":[14,1],"semantic":"base"},{"cell":[14,2],"semantic":"edge_n"},
+        {"cell":[15,0],"semantic":"edge_s"},{"cell":[15,1],"semantic":"base"},{"cell":[15,2],"semantic":"edge_n"},
+        {"cell":[16,0],"semantic":"edge_s"},{"cell":[16,1],"semantic":"base"},{"cell":[16,2],"semantic":"edge_n"},
+        {"cell":[17,0],"semantic":"corner_se"},{"cell":[17,1],"semantic":"edge_e"},{"cell":[17,2],"semantic":"corner_ne"}
+      ],
+      "world_safe_zone": {"playable_bounds":[1,3,16,12],"visual_buffer_rows":[13]}
+    }
+  ],
+  "reachability": {
+    "movement": "orthogonal_4_way",
+    "required_pairs": [
+      {"from":[7,6],"map_id":"brookseed.map.farm_homestead","name":"wake_to_exit","to":[7,0]},
+      {"from":[7,6],"map_id":"brookseed.map.farm_homestead","name":"wake_to_farm_area","to":[4,3]},
+      {"from":[7,6],"map_id":"brookseed.map.farm_homestead","name":"wake_to_farm_house","to":[3,7]},
+      {"from":[7,6],"map_id":"brookseed.map.farm_homestead","name":"wake_to_farm_moss","to":[12,6]},
+      {"from":[7,6],"map_id":"brookseed.map.farm_homestead","name":"wake_to_farm_reed","to":[11,1]},
+      {"from":[7,6],"map_id":"brookseed.map.farm_homestead","name":"wake_to_farm_sluice","to":[12,7]},
+      {"from":[7,6],"map_id":"brookseed.map.farm_homestead","name":"wake_to_farm_wood","to":[1,6]},
+      {"from":[7,6],"map_id":"brookseed.map.farm_homestead","name":"wake_to_teaching_npc","to":[8,5]},
+      {"from":[9,11],"map_id":"brookseed.map.creek_market","name":"market_spawn_to_creek_warden","to":[13,8]},
+      {"from":[9,11],"map_id":"brookseed.map.creek_market","name":"market_spawn_to_exit","to":[9,12]},
+      {"from":[9,11],"map_id":"brookseed.map.creek_market","name":"market_spawn_to_neighbor_consensus","to":[7,10]},
+      {"from":[9,11],"map_id":"brookseed.map.creek_market","name":"market_spawn_to_neighbor_evidence","to":[11,5]},
+      {"from":[9,11],"map_id":"brookseed.map.creek_market","name":"market_spawn_to_neighbor_hearsay","to":[5,6]},
+      {"from":[9,11],"map_id":"brookseed.map.creek_market","name":"market_spawn_to_neighbor_storyteller","to":[7,5]},
+      {"from":[9,11],"map_id":"brookseed.map.creek_market","name":"market_spawn_to_seed_shed","to":[1,8]},
+      {"from":[9,11],"map_id":"brookseed.map.creek_market","name":"market_spawn_to_seed_steward","to":[4,8]},
+      {"from":[9,11],"map_id":"brookseed.map.creek_market","name":"market_spawn_to_warden_post","to":[16,8]},
+      {"from":[9,11],"map_id":"brookseed.map.creek_market","name":"market_spawn_to_water_apprentice","to":[3,5]},
+      {"from":[9,11],"map_id":"brookseed.map.creek_market","name":"market_spawn_to_wharf","to":[3,5]},
+      {"from":[9,11],"map_id":"brookseed.map.creek_market","name":"market_spawn_to_market_moss","to":[15,4]},
+      {"from":[9,11],"map_id":"brookseed.map.creek_market","name":"market_spawn_to_market_reed","to":[12,4]},
+      {"from":[9,11],"map_id":"brookseed.map.creek_market","name":"market_spawn_to_market_wood","to":[6,4]},
+      {"from":[9,11],"map_id":"brookseed.map.creek_market","name":"market_spawn_to_restored_brook","to":[16,3]}
+    ]
+  },
+  "save_relocation": {
+    "applies_after_decode_before_validation": true,
+    "coordinate_records": {
+      "farm_cells": "preserve every previously valid legacy coordinate; additionally accept the four N-019 rear cultivable cells without changing schema or furniture placement bounds",
+      "placed_objects": "preserve every previously valid footprint and origin in the farm legacy region; visual paths do not invalidate placement",
+      "player_position": "preserve if in bounds and walkable; otherwise relocate"
+    },
+    "idempotent": true,
+    "nearest_safe_rule": {
+      "candidate": "in-bounds walkable cell excluding building collision, environment boundary, static obstacle, water, canal, and NPC occupied cells",
+      "distance": "manhattan",
+      "tie_break": ["distance_ascending","y_ascending","x_ascending"]
+    },
+    "no_schema_change": true,
+    "save_schema_version": 8,
+    "unknown_map_id": "reject as invalid contents; do not guess",
+    "writeback": "normal subsequent save writes the relocated coordinate without adding fields"
+  },
+  "schema_version": 1,
+  "task": "N-015"
+}

@@ -59,8 +59,10 @@ struct SettingsPanelView: View {
 
             HStack {
                 Button("恢复默认") { onRestoreDefaults() }
+                    .focusable(false)
                 Spacer()
                 Button("关闭") { onClose() }
+                    .focusable(false)
             }
             .buttonStyle(.bordered)
         }

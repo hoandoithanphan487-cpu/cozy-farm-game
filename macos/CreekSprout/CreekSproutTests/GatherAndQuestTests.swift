@@ -30,7 +30,7 @@ final class GatherAndQuestTests: XCTestCase {
 
     func testHarvestIsDeterministicOneTimeAndIdempotent() {
         var state = GameState.vs0NewGame(catalog: catalog)
-        state.position = GridPosition(x: 2, y: 4)
+        state.position = GridPosition(x: 1, y: 5)
         state.facing = .up
         let first = GatherService.harvest(state: state, nodeID: ContentID.farmWoodGather, catalog: catalog)
         guard case .success(let harvested) = first else {
@@ -50,7 +50,7 @@ final class GatherAndQuestTests: XCTestCase {
     func testCapacityFailureDoesNotMarkNodeOrSpendStamina() {
         var state = GameState.vs0NewGame(catalog: catalog)
         state.inventoryCapacity = 1
-        state.position = GridPosition(x: 2, y: 4)
+        state.position = GridPosition(x: 1, y: 5)
         let before = state
         let result = GatherService.harvest(state: state, nodeID: ContentID.farmWoodGather, catalog: catalog)
         XCTAssertEqual(result, .failure(.capacityExceeded))
@@ -106,9 +106,9 @@ final class GatherAndQuestTests: XCTestCase {
 
     func testFarmWoodAndMossAloneCraftCanalSegment() {
         var state = GameState.vs0NewGame(catalog: catalog)
-        state.position = GridPosition(x: 2, y: 4)
+        state.position = GridPosition(x: 1, y: 5)
         state = try! GatherService.harvest(state: state, nodeID: ContentID.farmWoodGather, catalog: catalog).get()
-        state.position = GridPosition(x: 7, y: 4)
+        state.position = GridPosition(x: 12, y: 5)
         state = try! GatherService.harvest(state: state, nodeID: ContentID.farmMossGather, catalog: catalog).get()
         XCTAssertGreaterThanOrEqual(InventoryService.count(state.inventory, itemID: ContentID.creekWood), 6)
         XCTAssertGreaterThanOrEqual(InventoryService.count(state.inventory, itemID: ContentID.mossStone), 4)

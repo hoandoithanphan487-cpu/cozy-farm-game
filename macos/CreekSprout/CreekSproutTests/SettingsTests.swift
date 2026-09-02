@@ -31,6 +31,61 @@ final class SettingsTests: XCTestCase {
         XCTAssertTrue(result.message?.contains("移动-下") == true)
     }
 
+    func testGameplayRoutesDepositAndCharacterInfoWithoutInterception() {
+        let settings = SettingsState.defaults
+
+        XCTAssertEqual(
+            InputBindingsService.route(
+                for: "Key:I",
+                device: .keyboardMouse,
+                settings: settings
+            ),
+            .action(InputBindingDefinitions.actionDeposit)
+        )
+        XCTAssertEqual(
+            InputBindingsService.route(
+                for: InputBindingDefinitions.characterInfoKeyboardBinding,
+                device: .keyboardMouse,
+                settings: settings
+            ),
+            .showCharacterInfo
+        )
+        XCTAssertNotEqual(
+            InputBindingsService.route(
+                for: "Key:I",
+                device: .keyboardMouse,
+                settings: settings
+            ),
+            .showCharacterInfo
+        )
+        XCTAssertNotEqual(
+            InputBindingsService.route(
+                for: InputBindingDefinitions.characterInfoKeyboardBinding,
+                device: .keyboardMouse,
+                settings: settings
+            ),
+            .action(InputBindingDefinitions.actionDeposit)
+        )
+    }
+
+    func testCharacterInfoCandidateIsNotUsedByDefaultGameplayBindings() {
+        let defaults = SettingsState.defaults.bindings.keyboardMouse
+        XCTAssertFalse(
+            defaults.values.flatMap { $0 }.contains(InputBindingDefinitions.characterInfoKeyboardBinding)
+        )
+        XCTAssertEqual(
+            defaults[InputBindingDefinitions.actionDeposit],
+            ["Key:I"]
+        )
+    }
+
+    func testCharacterInfoCloseHintUsesResolvedKeyboardLabel() {
+        XCTAssertEqual(
+            "[\(InputBindingDefinitions.characterInfoKeyboardLabel)]关闭",
+            "[Q]关闭"
+        )
+    }
+
     func testRequiredActionCannotLoseLastBinding() {
         var settings = SettingsState.defaults
         let binding = settings.bindings.keyboardMouse[InputBindingDefinitions.actionMoveUp]!.first!

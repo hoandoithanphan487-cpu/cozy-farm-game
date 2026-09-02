@@ -35,16 +35,16 @@ final class N001PresentationEvidenceTests: XCTestCase {
         try writeScenePNG(scene, name: "01-newgame-farm-player-apprentice.png", to: screenshots)
 
         scene.selectTool(.harvest)
-        walk(scene, [.down, .down])
+        walkToward(scene, x: 4, y: 4, thenFace: .down)
         scene.performAction()
         XCTAssertTrue(scene.lastFeedback.contains("1/3") || scene.lastFeedback.contains("收获"))
         try writeScenePNG(scene, name: "02-harvest-1.png", to: screenshots)
 
-        walk(scene, [.left, .up, .down])
+        walkToward(scene, x: 5, y: 4, thenFace: .down)
         scene.performAction()
         try writeScenePNG(scene, name: "02-harvest-2.png", to: screenshots)
 
-        walk(scene, [.right, .right, .up, .down])
+        walkToward(scene, x: 6, y: 4, thenFace: .down)
         scene.performAction()
         try writeScenePNG(scene, name: "02-harvest-3.png", to: screenshots)
 
@@ -58,7 +58,7 @@ final class N001PresentationEvidenceTests: XCTestCase {
         XCTAssertTrue(scene.lastFeedbackIsSuccess, scene.lastFeedback)
         #endif
 
-        walkToward(scene, x: 6, y: 1, thenFace: .down)
+        walkToward(scene, x: 8, y: 5, thenFace: .up)
         scene.talkToNpc()
         XCTAssertTrue(scene.hudText.contains("【对话】"), scene.lastFeedback)
         try writeScenePNG(scene, name: "04-talk-expression.png", to: screenshots)
@@ -74,7 +74,7 @@ final class N001PresentationEvidenceTests: XCTestCase {
         XCTAssertEqual(scene.gameState.clock.day, 2, scene.lastFeedback)
         XCTAssertEqual(scene.audioService.weatherLayer, .rain)
 
-        walkToward(scene, x: 5, y: 0)
+        walkToward(scene, x: 7, y: 0)
         scene.performAction()
         XCTAssertEqual(scene.gameState.currentMapID, ContentID.creekMarket, scene.lastFeedback)
         XCTAssertEqual(scene.audioService.mapLayer, .creek)

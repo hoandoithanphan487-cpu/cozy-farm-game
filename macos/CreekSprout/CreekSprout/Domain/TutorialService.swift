@@ -80,7 +80,11 @@ struct TutorialService: Sendable {
     }
 
     func canTalk(to spawn: InitialNpcSpawn, from state: GameState) -> Bool {
-        state.targetCell == spawn.position || state.position == spawn.position
+        let faced = GridPosition(
+            x: state.position.x + state.facing.deltaX,
+            y: state.position.y + state.facing.deltaY
+        )
+        return faced == spawn.position || state.position == spawn.position
     }
 
     private func nextCompletableStepID(state: GameState) -> String? {
