@@ -1,0 +1,118 @@
+{
+  "generated_by": "scripts/gen-n031-manifests.py",
+  "note": "Web port consumes these macOS sources read-only. Any drift must fail audit:parity.",
+  "swift": [
+    {
+      "relative": "macos/CreekSprout/CreekSprout/FarmScene.swift",
+      "sha256": "b12b69b72402729a54a4be272c674d1505198e2e52ba387770c155a77360ff81"
+    },
+    {
+      "relative": "macos/CreekSprout/CreekSprout/Content/MapDefinition.swift",
+      "sha256": "36127bc9842069bd09340ef6d7e9f745082da50686ec6a77fe1aa7cb69f898ae"
+    },
+    {
+      "relative": "macos/CreekSprout/CreekSprout/Content/WorldCatalog.swift",
+      "sha256": "d2edf1280e7235c8cb71f007ded37594be21c8a098121f4ad9f56fa7ed4650b8"
+    },
+    {
+      "relative": "macos/CreekSprout/CreekSprout/Content/ContentCatalog.swift",
+      "sha256": "7f2643e7a0008304f5b49fa02e6065748806937a35ffd781d1b2275ea21a100c"
+    },
+    {
+      "relative": "macos/CreekSprout/CreekSprout/Content/NewGameScenarioDefinition.swift",
+      "sha256": "ad99370cc6c446f1384a5f83b6a453324eada60679b9113b89842e6400d3ad95"
+    },
+    {
+      "relative": "macos/CreekSprout/CreekSprout/Content/StoryContentModels.swift",
+      "sha256": "7286c77d864a32ef14b5c14985eede5fd2f3535f44476e61ec592f5ea444d0bc"
+    },
+    {
+      "relative": "macos/CreekSprout/CreekSprout/Domain/MapTravelService.swift",
+      "sha256": "e632eea3e16ca620553cbc3178fba2452f7b74236a880def23512f6bc8ed91b5"
+    },
+    {
+      "relative": "macos/CreekSprout/CreekSprout/Presentation/WorldLifeCatalog.swift",
+      "sha256": "9695338da252d11c57b2a5cd3b8bc281269bd40b8d34e294c22b75789e51b8ce"
+    },
+    {
+      "relative": "macos/CreekSprout/CreekSprout/Presentation/WorldVisualCatalog.swift",
+      "sha256": "f17747e901623de9d9d24a272927bc1dc565fba06eda645777c5d3a790ae5566"
+    },
+    {
+      "relative": "macos/CreekSprout/CreekSprout/Presentation/RuntimeArtCatalog.swift",
+      "sha256": "a6b9d5f913a65033ab9f8e9cb5ddf83ce3b100bdb051472903baee6a4ee1887a"
+    },
+    {
+      "relative": "macos/CreekSprout/CreekSprout/Presentation/PixelAssetStore.swift",
+      "sha256": "3373d97d96778a1dbdd241ab0974988a3d914788220c8a1fafa10a46a34ce1b5"
+    },
+    {
+      "relative": "macos/CreekSprout/CreekSprout/Presentation/SpriteSheetAnimator.swift",
+      "sha256": "220958ae6d1a840d55479c1e9cf840b5c97c46276d4f120df714ff42a75a5567"
+    },
+    {
+      "relative": "macos/CreekSprout/CreekSprout/Presentation/CharacterVisualCatalog.swift",
+      "sha256": "4f8d84abcc1956f596a4000dcf6181f14a8746f4c0a680afbf055679ab201873"
+    },
+    {
+      "relative": "macos/CreekSprout/CreekSprout/Presentation/CharacterVisualNode.swift",
+      "sha256": "aa16922ccdb171a8ab6b4a9c806a01db6e643ac047bb6049f3cc3aa1047f4959"
+    },
+    {
+      "relative": "macos/CreekSprout/CreekSprout/Presentation/WorldCamera.swift",
+      "sha256": "041092d63c4944573092435358f2eb3c1118ada34580c6fa7b2c29235a3e5e8e"
+    },
+    {
+      "relative": "macos/CreekSprout/CreekSprout/Presentation/WorldEffectPresenter.swift",
+      "sha256": "d18bf39d51260497a081572711e9027a77ce8177cf5ef3c0911e2572f090b6a1"
+    },
+    {
+      "relative": "macos/CreekSprout/CreekSprout/Presentation/BuildingVisualPresenter.swift",
+      "sha256": "d83b9429b2254d0a15db978bbccffffb330a1835c25dc4be29d911f7bcc82b01"
+    },
+    {
+      "relative": "macos/CreekSprout/CreekSprout/Presentation/CharacterVisualDefinition.swift",
+      "sha256": "8c8db8fdcf2fe943204b13c1f49c27e68e092884674d98561728d4f4c73ee005"
+    },
+    {
+      "relative": "macos/CreekSprout/CreekSprout/Presentation/PortraitPresentationCatalog.swift",
+      "sha256": "be14e4ba9de92a5e63bb23030687ff254cbaf82a0703f4863f35f7c09474dee8"
+    }
+  ],
+  "docs": [
+    {
+      "relative": "docs/game/n-015-map-layout-contract.json",
+      "sha256": "4e9e3158d7cf6fcb554fab0885f1ebc8ae46509e06797ccc17df15748cec22ec"
+    },
+    {
+      "relative": "docs/game/n-019-approved-art-inventory.md",
+      "sha256": "d0792e3943a78193cc3833358289a90b65f87acf8b9ab47e1d5c64324740f371"
+    },
+    {
+      "relative": "docs/game/game-rules.md",
+      "sha256": "203d1232590f2290fe4d45dff6788f2d874b8453f9322d1f975c8deb2bd4d6b9"
+    },
+    {
+      "relative": "docs/game/story-bible.md",
+      "sha256": "87de9111df0154792c707e8ca79920278bc1c46e539677b5b5d69d756b59b8e3"
+    },
+    {
+      "relative": "docs/game/n-031-vscode-full-web-port-r3-prompt.md",
+      "sha256": "de2441133edad164c02433e1015be8690c2c16544399bfaf7aab1c0b8298dd81"
+    },
+    {
+      "relative": "docs/game/n-031-vscode-r3-finish-task.md",
+      "sha256": "11a5b841b460561970fa35b88877c6a69510c5553dde881141d65346f5ab982a"
+    }
+  ],
+  "generators": [
+    {
+      "relative": "scripts/gen-r22-data.py",
+      "sha256": "9d91fa7f91ccd194c7a1dae951ed33ca7778680c3a7281b9ae51afbf2f5506c3"
+    },
+    {
+      "relative": "scripts/gen-n031-manifests.py",
+      "sha256": "014aeb5ac31129cc68f72eab9473921fdd9b6d96b39bfa142a5647f57b431ca9"
+    }
+  ]
+}
