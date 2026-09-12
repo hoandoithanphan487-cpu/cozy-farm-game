@@ -1,7 +1,8 @@
 # 部署 Prompt：《溪谷新芽》Web 版 → Vercel
 
 > 用途：把下面代码块内的整段文本复制给执行部署的 AI（PI / 其他终端代理），它即可独立完成部署。
-> 工程路径：`/Users/fengyifan/Documents/VibeCoding/web/creek-sprout`（仓库 HEAD `51b39db`）
+> 工程路径：`/Users/fengyifan/Documents/VibeCoding/web/creek-sprout`
+> GitHub 仓库：`hoandoithanphan487-cpu/cozy-farm-game`（main，工程位于 `web/creek-sprout` 子目录，HEAD `ef77b12`）
 > 发布产物：纯静态站点（`dist/client`）
 
 ---
@@ -31,8 +32,15 @@ npx vercel@latest link                       # 关联或新建项目，项目名
 npx vercel@latest deploy --prod              # 云端会重新跑 buildCommand
 部署完成后立刻把线上 URL 打印出来。
 
-[如果走 Vercel 控制台（Git 集成）路线]
-Import 该 Git 仓库后设置：Framework Preset = Other；Build Command = npm run build && node scripts/export-static-index.mjs；Output Directory = dist/client；Install Command = npm install。环境变量不需要任何密钥。
+[如果走 Vercel 控制台（Git 集成）路线，推荐]
+代码已在 GitHub 仓库 hoandoithanphan487-cpu/cozy-farm-game 的 main 分支（工程位于 web/creek-sprout 子目录）。
+Vercel → Add New → Project → Import 该仓库，然后设置：
+  Root Directory    = web/creek-sprout      ← 必须设置，否则会在仓库根目录构建 macOS 工程而失败
+  Framework Preset  = Other
+  Build Command     = npm run build && node scripts/export-static-index.mjs
+  Output Directory  = dist/client
+  Install Command   = npm install
+环境变量不需要任何密钥。绑定后每次 push 到 main 会自动重新部署。
 
 [构建环境]
 Node 20 或更高（建议 22）。若 Vercel 构建报 Node 版本相关错误，在该项目 Settings → Environment Variables 增加 NODE_VERSION=22 后重新部署。
@@ -78,6 +86,7 @@ Node 20 或更高（建议 22）。若 Vercel 构建报 Node 版本相关错误�
 
 ## 备注
 
+- 代码已推送到 `git@github.com:hoandoithanphan487-cpu/cozy-farm-game.git`（main，提交 `ef77b12`）；web 工程位于该仓库的 `web/creek-sprout` 子目录，因此 Vercel 导入时**必须**把 Root Directory 设为 `web/creek-sprout`。
 - `dist/client` 中的 `_headers` 是 Cloudflare 专用格式，Vercel 会忽略；缓存策略由 `vercel.json` 的 `headers` 提供，两者不冲突。
 - 由于是 SPA rewrite，任意未知路径都会返回首页 HTML（而非 404），这是预期行为。
 - 若后续需要正式域名，在 Vercel 项目 Settings → Domains 绑定，并与 PO 确认后再动旧站。
